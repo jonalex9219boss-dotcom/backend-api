@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyS - Préstamos y Soluciones</title>
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-light: #e0e0e0;
+            --green: #27ae60;
+            --red: #e74c3c;
+            --yellow: #f1c40f;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: var(--dark-bg); 
+            color: var(--text-light); 
+        }
+
+        #loginScreen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--gold);
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        .header { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: #181818; 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(212, 175, 55, 0.3); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            margin-bottom: 25px; 
+        }
+
+        .logo-svg {
+            max-width: 450px;
+            width: 100%;
+            height: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #181818;
+            border: 1px solid #333;
+            border-left: 4px solid var(--gold);
+            border-radius: 8px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .stat-card h4 {
+            margin: 0 0 8px 0;
+            color: #aaa;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .val {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        .stat-card.green { border-left-color: var(--green); }
+        .stat-card.green .val { color: #2ecc71; }
+        .stat-card.red { border-left-color: var(--red); }
+        .stat-card.red .val { color: #e74c3c; }
+
+        .container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 25px; 
+            margin-bottom: 30px; 
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 12px; 
+            border: 1px solid #2a2a2a; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+        }
+
+        h3 { 
+            margin-top: 0; 
+            color: var(--gold); 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 10px; 
+            font-size: 18px; 
+        }
+
+        input, select, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            box-sizing: border-box; 
+            border-radius: 6px; 
+            font-size: 14px; 
+        }
+
+        input, select {
+            background-color: #2b2b2b;
+            border: 1px solid #444;
+            color: #fff;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        button { 
+            background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%); 
+            color: #000; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            font-size: 15px; 
+        }
+
+        button:hover { 
+            background: linear-gradient(135deg, #e5be48 0%, #c49615 100%); 
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); 
+        }
+
+        .btn-wa {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 6px 10px;
+            font-size: 12px;
+            width: auto;
+            margin: 2px;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 6px 10px;
+            font-size: 12px;
+            width: auto;
+            margin: 2px;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 6px 10px;
+            font-size: 12px;
+            width: auto;
+            margin: 2px;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: var(--card-bg); 
+            border-radius: 8px; 
+            overflow: hidden; 
+            margin-top: 15px; 
+        }
+
+        th, td { 
+            border: 1px solid #333; 
+            padding: 12px; 
+            text-align: left; 
+        }
+
+        th { 
+            background-color: #282828; 
+            color: var(--gold); 
+        }
+
+        .row-vencida { background-color: rgba(231, 76, 60, 0.15); }
+        .row-por-vencer { background-color: rgba(241, 196, 15, 0.15); }
+
+        .badge { 
+            padding: 5px 10px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            font-size: 12px; 
+        }
+
+        .activo { background-color: #5c3c00; color: #ffca28; }
+        .pagado { background-color: #004d25; color: #69f0ae; }
+        .stars { color: #f1c40f; font-size: 14px; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Login -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <svg class="logo-svg" viewBox="0 0 500 120" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 20px;">
+                <circle cx="70" cy="60" r="48" stroke="#D4AF37" stroke-width="3" fill="none"/>
+                <circle cx="70" cy="60" r="42" stroke="#D4AF37" stroke-width="1.5" fill="none"/>
+                <text x="70" y="71" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="34" fill="#D4AF37" text-anchor="middle">PyS</text>
+                <line x1="130" y1="30" x2="480" y2="30" stroke="#D4AF37" stroke-width="3"/>
+                <line x1="130" y1="90" x2="480" y2="90" stroke="#D4AF37" stroke-width="3"/>
+                <text x="140" y="58" font-family="'Segoe UI', sans-serif" font-weight="bold" font-size="30" fill="#D4AF37">Préstamos y</text>
+                <text x="140" y="84" font-family="'Segoe UI', sans-serif" font-weight="bold" font-size="28" fill="#D4AF37">Soluciones</text>
+            </svg>
+            <h3 style="border:none;">Acceso al Sistema</h3>
+            <input type="text" id="loginUser" placeholder="Usuario">
+            <input type="password" id="loginPass" placeholder="Contraseña" onkeydown="if(event.key === 'Enter') iniciarSesion()">
+            <button onclick="iniciarSesion()">Ingresar</button>
+        </div>
+    </div>
+
+    <!-- Panel de Control Principal -->
+    <div id="mainApp" style="display: none;">
+        
+        <div class="header" style="justify-content: space-between;">
+            <div style="width: 100px;"></div>
+            <svg class="logo-svg" viewBox="0 0 500 120" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="70" cy="60" r="48" stroke="#D4AF37" stroke-width="3" fill="none"/>
+                <circle cx="70" cy="60" r="42" stroke="#D4AF37" stroke-width="1.5" fill="none"/>
+                <text x="70" y="71" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="34" fill="#D4AF37" text-anchor="middle">PyS</text>
+                <line x1="130" y1="30" x2="480" y2="30" stroke="#D4AF37" stroke-width="3"/>
+                <line x1="130" y1="90" x2="480" y2="90" stroke="#D4AF37" stroke-width="3"/>
+                <text x="140" y="58" font-family="'Segoe UI', sans-serif" font-weight="bold" font-size="30" fill="#D4AF37">Préstamos y</text>
+                <text x="140" y="84" font-family="'Segoe UI', sans-serif" font-weight="bold" font-size="28" fill="#D4AF37">Soluciones</text>
+            </svg>
+            <button style="width: auto; padding: 8px 15px; background: #e74c3c; color: white;" onclick="cerrarSesion()">🔒 Salir</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card green">
+                <h4>💵 Caja Disponible (Líquido)</h4>
+                <div class="val" id="statCaja">$0</div>
+            </div>
+            <div class="stat-card red">
+                <h4>🏦 Pagos / Cuotas Bancos</h4>
+                <div class="val" id="statGastos">$0</div>
+            </div>
+            <div class="stat-card">
+                <h4>📉 Capital en Calle</h4>
+                <div class="val" id="statCalle">$0</div>
+            </div>
+            <div class="stat-card">
+                <h4>💰 Total Capital Prestado</h4>
+                <div class="val" id="statPrestado">$0</div>
+            </div>
+            <div class="stat-card">
+                <h4>📥 Total Abonos Recaudados</h4>
+                <div class="val" id="statRecaudado">$0</div>
+            </div>
+        </div>
+<div class="stat-card green">
+    <h4>📈 Ganancia de Hoy</h4>
+    <div class="val" id="statGananciaHoy">$0</div>
+</div>
+
+<div class="stat-card blue">
+    <h4>📊 Ganancia del Mes</h4>
+    <div class="val" id="statGananciaMes">$0</div>
+</div>
+        <div class="container">
+            <div class="card">
+                <h3>1. Registrar Cliente</h3>
+                <input type="text" id="nombre" placeholder="Nombre completo">
+                <input type="text" id="cedula" placeholder="Cédula de ciudadanía">
+                <input type="text" id="telefono" placeholder="Número de contacto">
+                <input type="text" id="direccion" placeholder="Dirección del cliente">
+                <button onclick="registrarCliente()">Guardar Cliente</button>
+            </div>
+
+            <div class="card">
+                <h3>2. Crear Préstamo</h3>
+                <select id="selectCliente">
+                    <option value="">Seleccione un Cliente...</option>
+                </select>
+                <input type="number" id="montoPrestado" placeholder="Monto Prestado ($)">
+                <input type="number" id="interes" placeholder="Interés (%) Ej: 5">
+                <input type="number" id="plazoMeses" placeholder="Plazo en Meses (Ej: 6)" value="1">
+                <label style="font-size: 12px; color: #aaa;">Fecha Próximo Cobro / Vencimiento:</label>
+                <input type="date" id="fechaVencimiento">
+                <button onclick="crearPrestamo()">Generar Préstamo</button>
+            </div>
+
+            <div class="card">
+                <h3>3. Registrar Pago / Abono</h3>
+                <select id="selectPrestamo">
+                    <option value="">Seleccione Préstamo...</option>
+                </select>
+                <input type="number" id="montoPago" placeholder="Monto del Abono ($)">
+                
+                <label style="font-size: 12px; color: #aaa;">Destino del Abono:</label>
+                <select id="tipoAbono">
+                    <option value="CAPITAL_E_INTERES">Abono Normal (Capital + Interés)</option>
+                    <option value="SOLO_INTERES">Solo Pago de Interés Mensual</option>
+                    <option value="SOLO_CAPITAL">Abono Directo a Capital</option>
+                </select>
+
+                <label style="font-size: 12px; color: #aaa;">Método de Pago:</label>
+                <select id="metodoPago">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Nequi">Nequi</option>
+                    <option value="Daviplata">Daviplata</option>
+                </select>
+                <button onclick="registrarPago()">Registrar Abono</button>
+
+                <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+                <small style="color: #aaa;">Inyección de Capital / Caja Inicial ($):</small>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="cajaInicialInput" placeholder="Ej: 5000000" style="margin: 5px 0;">
+                    <button style="width: auto; padding: 0 15px; margin: 5px 0;" onclick="fijarCajaInicial()">Fijar</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>4. Registrar Pago a Banco / Gastos</h3>
+                <input type="text" id="descGasto" placeholder="Ej: Cuota Banco Davivienda">
+                <input type="number" id="montoGasto" placeholder="Monto Pagado ($)">
+                <select id="catGasto">
+                    <option value="Cuota Banco">Cuota Banco / Préstamo Externo</option>
+                    <option value="Gasto Operativo">Gasto Operativo / Papelería</option>
+                    <option value="Otro Gasto">Otro Egreso</option>
+                </select>
+                <button style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;" onclick="registrarGasto()">Registrar Egreso</button>
+            </div>
+        </div>
+
+        <!-- REPORTE MENSUAL DE COBROS -->
+<div class="card">
+    <h3 style="color: #f39c12; margin-bottom: 12px;">📅 Consulta de Cobros por Mes</h3>
+    
+    <label style="font-size: 12px; color: #aaa;">Seleccionar Mes y Año:</label>
+    <input type="month" id="filtroMesCobros" onchange="consultarCobrosMensuales()" style="margin-bottom: 15px; padding: 8px; width: 100%;">
+
+    <div id="resumenCobrosMes" style="display: none; background: #2a2a2a; padding: 12px; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-around; text-align: center;">
+            <div>
+                <small style="color: #aaa; display: block;">Total Recaudado</small>
+                <strong id="lblTotalRecaudado" style="color: #2ecc71; font-size: 18px;">$0</strong>
+            </div>
+            <div>
+                <small style="color: #aaa; display: block;">Cobros / Abonos</small>
+                <strong id="lblCantidadPagos" style="color: #3498db; font-size: 18px;">0</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <div class="card">
+    <h3 style="color: #f39c12; margin-bottom: 12px;">5. Control de Préstamos Activos</h3>
+    
+    <!-- Contenedor flexible para alinear buscador y botones de forma limpia -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+        
+        <!-- Input del buscador con un ancho cómodo -->
+        <input type="text" id="inputBuscador" placeholder="🔍 Buscar cliente por nombre o cédula..." oninput="filtrarTabla()" style="flex: 1; min-width: 250px; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #1a1a1a; color: white;">
+        
+        <!-- Grupo de botones alineados -->
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <!-- 🌟 NUEVO BOTÓN SEGURO PARA EDITAR CLIENTE -->
+            <button id="btnEditarClienteActual" class="btn-warning" onclick="prepararEdicionClienteFiltrado()" style="background-color: #ff9800; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; display: none;">
+                👤 Editar Cliente
+            </button>
+            
+            <button style="padding: 8px 15px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer;" onclick="descargarBackup()">Descargar Backup</button>
+            <button style="padding: 8px 15px; background: #f39c12; color: white; border: none; border-radius: 5px; cursor: pointer;" onclick="exportarExcel()">Exportar a Excel</button>
+            <button style="padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;" onclick="cargarPrestamos()">Actualizar Tabla</button>
+        </div>
+    </div>
+</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Scoring</th>
+                        <th>Monto Inicial</th>
+                        <th>Plazo / Interés</th>
+                        <th>Avance Cuotas</th>
+                        <th>Cuota / Mes</th>
+                        <th>Total + Interés</th>
+                        <th>Saldo Pendiente</th>
+                        <th>Capital Real</th>
+                        <th>Próximo Cobro</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaPrestamos"></tbody>
+            </table>
+        </div>
+
+        <div class="card" id="seccionGastos" style="margin-top: 30px; display: none;">
+            <h3>6. Historial de Pagos a Bancos y Egresos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Descripción</th>
+                        <th>Categoría</th>
+                        <th>Monto Pagado</th>
+                        <th>Fecha</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaGastos"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let listaPrestamosGlobal = [];
+
+        window.onload = function() {
+            if (localStorage.getItem('pys_auth') === 'true') {
+                mostrarPanel();
+            }
+        };
+
+      function iniciarSesion() {
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+
+    // Pon aquí tu usuario y tu clave exacta entre las comillas:
+    const usuarioCorrecto = 'admin';        // Reemplaza 'admin' por tu usuario
+    const claveCorrecta = '290312Jo.';   // Reemplaza 'MiClaveSegura' por tu contraseña secreta
+
+    if (user === usuarioCorrecto && pass === claveCorrecta) {
+        localStorage.setItem('pys_auth', 'true');
+        mostrarPanel();
+    } else {
+        alert('❌ Usuario o contraseña incorrectos');
+    }
+}
+
+        function mostrarPanel() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('seccionGastos').style.display = 'block'; // Muestra la tabla de gastos
+    cargarTodo();
+}
+
+        function cerrarSesion() {
+    // Borramos cualquier rastro de sesión guardada
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Forzamos al navegador a recargar la página principal desde cero
+    window.location.href = window.location.pathname;
+}
+
+        function cargarTodo() {
+            cargarMetricasGanancias();
+            cargarClientes();
+            cargarPrestamos();
+            cargarEstadisticas();
+            cargarGastos();
+        }
+
+        async function cargarEstadisticas() {
+            try {
+                const res = await fetch(`${API_URL}/stats`);
+                const s = await res.json();
+
+                document.getElementById('statCaja').innerText = `$${s.cajaDisponible.toLocaleString()}`;
+                document.getElementById('statGastos').innerText = `$${s.totalGastosBancarios.toLocaleString()}`;
+                document.getElementById('statCalle').innerText = `$${s.totalSaldoPendiente.toLocaleString()}`;
+                document.getElementById('statPrestado').innerText = `$${s.totalPrestado.toLocaleString()}`;
+                document.getElementById('statRecaudado').innerText = `$${s.totalRecaudadoAbonos.toLocaleString()}`;
+                document.getElementById('cajaInicialInput').value = s.cajaInicial || '';
+            } catch (err) {
+                console.error('Error al cargar estadísticas:', err);
+            }
+        }
+
+        async function fijarCajaInicial() {
+            const monto = Number(document.getElementById('cajaInicialInput').value);
+            const res = await fetch(`${API_URL}/stats/caja-inicial`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ monto })
+            });
+            if (res.ok) {
+                alert('✅ Capital base actualizado');
+                cargarEstadisticas();
+            }
+        }
+
+        async function registrarCliente() {
+            try {
+                const cliente = {
+                    nombre: document.getElementById('nombre').value,
+                    cedula: document.getElementById('cedula').value,
+                    telefono: document.getElementById('telefono').value,
+                    direccion: document.getElementById('direccion').value
+                };
+
+                if (!cliente.nombre || !cliente.cedula) {
+                    alert('⚠️ Ingrese Nombre y Cédula');
+                    return;
+                }
+
+                const res = await fetch(`${API_URL}/clients`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cliente)
+                });
+
+                if (res.ok) {
+                    alert('✅ Cliente guardado');
+                    document.getElementById('nombre').value = '';
+                    document.getElementById('cedula').value = '';
+                    document.getElementById('telefono').value = '';
+                    document.getElementById('direccion').value = '';
+                    cargarTodo();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function cargarClientes() {
+            try {
+                const res = await fetch(`${API_URL}/clients`);
+                const clientes = await res.json();
+                const select = document.getElementById('selectCliente');
+                
+                if (!select) return;
+                select.innerHTML = '<option value="">Seleccione un Cliente</option>';
+                if (Array.isArray(clientes)) {
+                    clientes.forEach(c => {
+                        select.innerHTML += `<option value="${c._id}">${c.nombre} (${c.cedula})</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function crearPrestamo() {
+    try {
+        const clienteSelect = document.getElementById('selectCliente');
+        const clienteId = clienteSelect.value;
+        const clienteTexto = clienteSelect.options[clienteSelect.selectedIndex]?.text || '';
+
+        const montoPrestado = Number(document.getElementById('montoPrestado').value);
+        const interesPorcentaje = Number(document.getElementById('interes').value) || 0;
+        const plazoMeses = Number(document.getElementById('plazoMeses').value) || 1;
+        const fechaVencimientoCustom = document.getElementById('fechaVencimiento').value;
+
+        if (!clienteId || !montoPrestado) {
+            alert('⚠️ Ingrese cliente y monto');
+            return;
+        }
+
+        // --- CÁLCULO REDONDEADO SIEMPRE AL PRÓXIMO MIL ---
+        const interesMensualValor = (montoPrestado * interesPorcentaje) / 100;
+        const cuotaExacta = (montoPrestado / plazoMeses) + interesMensualValor;
+        
+        // Math.ceil fuerza el redondeo hacia arriba al mil siguiente
+        const cuotaMensual = Math.ceil(cuotaExacta / 1000) * 1000; 
+        const montoTotalPagar = cuotaMensual * plazoMeses;
+
+        const res = await fetch(`${API_URL}/loans`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+    clienteId: clienteId, // Cámbialo a clientId
+    montoPrestado,
+    interesPorcentaje,
+    plazoMeses,
+    cuotaMensual,
+    montoTotalPagar,
+    fechaVencimientoCustom
+})
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            alert('🎉 Préstamo creado exitosamente');
+
+            // --- PLANTILLA DE WHATSAPP ---
+            const textoMensaje = 
+`¡Hola! 🔹 Se ha aprobado tu nuevo crédito en PyS - Préstamos y Soluciones:
+
+🔹 Monto Solicitado: $${montoPrestado.toLocaleString()}
+🔹 Interés Mensual: ${interesPorcentaje}% ($${interesMensualValor.toLocaleString()}/mes)
+🔹 Plazo: ${plazoMeses} mes(es)
+🔹 Cuota Mensual: $${cuotaMensual.toLocaleString()}
+
+
+¡Estamos para ayudarte!`;
+
+            const telefono = data.telefono || data.clienteTelefono || (data.prestamo && data.prestamo.telefono);
+
+            if (telefono) {
+                let telLimpio = telefono.toString().replace(/\D/g, '');
+                if (!telLimpio.startsWith('57')) {
+                    telLimpio = '57' + telLimpio;
+                }
+                window.open(`https://api.whatsapp.com/send?phone=${telLimpio}&text=${encodeURIComponent(textoMensaje)}`, '_blank');
+            } else {
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textoMensaje)}`, '_blank');
+            }
+
+            document.getElementById('montoPrestado').value = '';
+            document.getElementById('interes').value = '';
+            document.getElementById('fechaVencimiento').value = '';
+            cargarTodo();
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function consultarCobrosMensuales() {
+    const inputVal = document.getElementById('filtroMesCobros').value; // Formato "YYYY-MM"
+    if (!inputVal) return;
+
+    const [anio, mes] = inputVal.split('-');
+
+    try {
+        const res = await fetch(`${API_URL}/payments/mensual/${anio}/${mes}`);
+        const data = await res.json();
+
+        if (res.ok) {
+            document.getElementById('resumenCobrosMes').style.display = 'block';
+            
+            // Formato con punto de miles para pesos colombianos
+            const totalFmt = Number(data.totalRecaudado || 0).toLocaleString('es-CO');
+            
+            document.getElementById('lblTotalRecaudado').innerText = `$${totalFmt}`;
+            document.getElementById('lblCantidadPagos').innerText = data.cantidadPagos || 0;
+        } else {
+            alert('No se pudieron obtener los datos del mes seleccionado.');
+        }
+    } catch (err) {
+        console.error('Error al consultar cobros del mes:', err);
+    }
+}
+
+        async function cargarPrestamos() {
+            try {
+                const res = await fetch(`${API_URL}/loans`);
+                const prestamos = await res.json();
+                listaPrestamosGlobal = prestamos;
+                
+                const tabla = document.getElementById('tablaPrestamos');
+                const selectPago = document.getElementById('selectPrestamo');
+                
+                if (!tabla || !selectPago) return;
+
+                tabla.innerHTML = '';
+                selectPago.innerHTML = '<option value="">Seleccione Préstamo para Abonar</option>';
+
+                const hoy = new Date();
+                hoy.setHours(0,0,0,0);
+
+                if (Array.isArray(prestamos)) {
+            prestamos.forEach(p => {
+                if (!p || !p.clienteId) return; // Salta los registros vacíos
+                        
+                        const nombreCliente = (p.clienteId && p.clienteId.nombre) ? p.clienteId.nombre : 'Cliente Desconocido';
+                        const esActivo = p.saldoPendiente > 0;
+                        const estadoTexto = esActivo ? 'ACTIVO' : 'PAGADO';
+                        const estadoClass = esActivo ? 'activo' : 'pagado';
+
+                        const montoInicial = p.montoPrestado ? p.montoPrestado.toLocaleString() : 0;
+                        const montoTotal = p.montoTotal ? p.montoTotal.toLocaleString() : 0;
+                        const saldoPendiente = p.saldoPendiente !== undefined ? p.saldoPendiente.toLocaleString() : 0;
+                        const meses = p.plazoMeses || 1;
+                        const cuota = (Math.ceil(((p.montoTotal || 0) / meses) / 1000) * 1000).toLocaleString('es-CO');
+                        const avanceCuotas = `${p.cuotasPagadas || 0} de ${p.plazoMeses || p.meses || 12}`;
+
+                        let fechaFmt = 'Sin fecha';
+                        let rowClass = '';
+                        let estrellas = '⭐⭐⭐⭐⭐'; // Puntaje por defecto excelente
+
+                        if (p.fechaVencimiento && esActivo) {
+    const fVenc = new Date(p.fechaVencimiento);
+    
+    // Extraemos los componentes de forma local para evitar desfases de zona horaria (UTC-5)
+    const anio = fVenc.getFullYear();
+    const mes = fVenc.getMonth();
+    const dia = fVenc.getDate();
+    const fVencLimpia = new Date(anio, mes, dia);
+
+    fechaFmt = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+
+    const diffDias = Math.round((fVencLimpia - hoy) / (1000 * 60 * 60 * 24));
+
+    if (diffDias < 0) {
+        rowClass = 'row-vencida';
+        estrellas = '⭐ (En Mora)';
+    } else if (diffDias <= 3) {
+        rowClass = 'row-por-vencer';
+        estrellas = '⭐⭐⭐ (Por vencer)';
+    } else {
+        rowClass = '';
+        estrellas = '⭐⭐⭐⭐⭐'; // Al día
+    }
+} else if (!esActivo || p.estado === 'CANCELADO' || p.estado === 'PAGADO') {
+    rowClass = 'row-pagado';
+    estrellas = '✅ (Pagado)';
+}
+
+                        tabla.innerHTML += `
+            <tr class="${rowClass}">
+                <td><b>${nombreCliente}</b></td>
+                <td><span class="stars">${estrellas}</span></td>
+                <td>$${montoInicial}</td>
+                <td>${meses} mes(es) (${p.interesPorcentaje || 0}%/mes)</td>
+                <td><strong style="color: #3498db;">${avanceCuotas}</strong></td>
+                <td><b>$${cuota}</b></td>
+                <td>$${montoTotal}</td>
+                <td style="color: var(--gold); font-weight: bold;">$${saldoPendiente}</td>
+                <td style="color: #2ecc71; font-weight: bold;">$${(p.capitalRestante ?? p.saldoCapital ?? 0).toLocaleString()}</td>
+                <td>📅 ${fechaFmt}</td>
+                <td><span class="badge ${estadoClass}">${estadoTexto}</span></td>
+                <td>
+                    ${esActivo ? `<button class="btn-wa" onclick="enviarRecordatorio('${nombreCliente}', '${cuota}', '${p.capitalRestante || p.saldoCapital || 0}', '${fechaFmt}')">Recordar</button>` : ''}
+                    <button class="btn-edit" onclick="editarPrestamo('${p._id}', '${nombreCliente}', ${p.montoPrestado || 0}, ${p.interesPorcentaje || 0}, ${p.plazoMeses || 0}, '${fechaFmt}')">Editar</button>
+                    <button class="btn-info" onclick="verHistorialCliente('${p._id}', '${nombreCliente}', '${p.cedula || p.clientId?.cedula || 'N/A'}', ${p.saldoPendiente || 0})">Historial</button>
+                    <button class="btn-danger" onclick="eliminarPrestamo('${p._id}', '${nombreCliente}')">🗑️</button>
+                </td>
+            </tr>
+        `;
+
+                        if (esActivo) {
+                            selectPago.innerHTML += `<option value="${p._id}">${nombreCliente} - Debe: $${saldoPendiente}</option>`;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function registrarGasto() {
+            const descripcion = document.getElementById('descGasto').value;
+            const monto = document.getElementById('montoGasto').value;
+            const categoria = document.getElementById('catGasto').value;
+
+            if (!descripcion || !monto) {
+                alert('⚠️ Ingrese descripción y monto del pago');
+                return;
+            }
+
+            const res = await fetch(`${API_URL}/expenses`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ descripcion, monto, categoria })
+            });
+
+            if (res.ok) {
+                alert('🏦 Pago/Egreso registrado correctamente');
+                document.getElementById('descGasto').value = '';
+                document.getElementById('montoGasto').value = '';
+                cargarTodo();
+            }
+        }
+
+        async function cargarGastos() {
+            try {
+                const res = await fetch(`${API_URL}/expenses`);
+                const gastos = await res.json();
+                const tabla = document.getElementById('tablaGastos');
+                if (!tabla) return;
+
+                tabla.innerHTML = '';
+                if (Array.isArray(gastos)) {
+                    gastos.forEach(g => {
+                        const fecha = new Date(g.fecha).toLocaleDateString('es-CO');
+                        tabla.innerHTML += `
+                            <tr>
+                                <td>${g.descripcion}</td>
+                                <td><span class="badge" style="background:#444;">${g.categoria}</span></td>
+                                <td style="color: #e74c3c; font-weight: bold;">-$${g.monto.toLocaleString()}</td>
+                                <td>${fecha}</td>
+                                <td><button class="btn-danger" onclick="eliminarGasto('${g._id}')">🗑️ Eliminar</button></td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function eliminarGasto(id) {
+            if (confirm('¿Desea eliminar este registro de pago?')) {
+                await fetch(`${API_URL}/expenses/${id}`, { method: 'DELETE' });
+                cargarTodo();
+            }
+        }
+
+        async function editarPrestamo(id, nombre, montoActual, interesActual, plazoActual, fechaActual) {
+    const nuevaFecha = prompt(`Editar Préstamo de ${nombre}\nFecha Próximo Cobro (YYYY-MM-DD):`, fechaActual !== 'Sin fecha' ? fechaActual : '');
+    if (nuevaFecha === null) return;
+
+    const nuevoMonto = prompt('Monto Prestado ($):', montoActual);
+    if (nuevoMonto === null) return;
+
+    const nuevoInteres = prompt('Interés Mensual (%):', interesActual);
+    if (nuevoInteres === null) return;
+
+    const nuevoPlazo = prompt('Plazo en Meses:', plazoActual);
+    if (nuevoPlazo === null) return;
+
+    const datosAEnviar = {
+        montoPrestado: Number(nuevoMonto),
+        saldoCapital: Number(nuevoMonto),
+        saldoPendiente: Number(nuevoMonto),
+        interesPorcentaje: Number(nuevoInteres),
+        plazoMeses: Number(nuevoPlazo),
+        fechaVencimiento: nuevaFecha.trim()
+    };
+
+    try {
+        const res = await fetch(`http://localhost:5000/api/loans/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosAEnviar)
+        });
+
+        if (res.ok) {
+            const loanUpdated = await res.json();
+            alert('Préstamo actualizado con éxito');
+
+            try {
+                const telefono = loanUpdated.clienteId?.telefono || loanUpdated.telefono;
+
+                if (telefono) {
+                    const mensaje = `Hola *${nombre}*, le saludamos de *PyS - Préstamos y Soluciones*.\nLe informamos que los datos de su crédito han sido actualizados.\nNuevo Capital: $${nuevoMonto}`;
+                    const telefonoLimpio = String(telefono).replace(/\D/g, '');
+                    const urlWhatsApp = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
+                    window.open(urlWhatsApp, '_blank');
+                }
+            } catch (wErr) {
+                console.error('No se pudo abrir WhatsApp:', wErr);
+            }
+
+            if (typeof cargarTodo === 'function') {
+                cargarTodo();
+            } else if (typeof cargarPrestamos === 'function') {
+                cargarPrestamos();
+            }
+        } else {
+            const errData = await res.json();
+            alert('Error al actualizar: ' + (errData.mensaje || errData.message));
+        }
+    } catch (err) {
+        console.error('Error al editar:', err);
+        alert('Error de conexión');
+    }
+}
+
+        function enviarRecordatorio(nombre, cuota, capital, fecha) {
+    const mensaje = `Hola *${nombre}*👋🏻 \n Le saludamos de *PyS - Préstamos y Soluciones*.\n\n` +
+        `Le recordamos que el próximo pago de su cuota ($${cuota}) o abono vence el: *${fecha}*.\n` +
+        `*Capital pendiente actual:* *${capital}*\n\n` +
+        `Quedamos atentos. ¡Muchas gracias por su puntualidad!`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+        function exportarExcel() {
+            if (!listaPrestamosGlobal || listaPrestamosGlobal.length === 0) return;
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Cliente,Monto Prestado,Interes Mensual (%),Plazo (Meses),Monto Total,Saldo Pendiente,Estado,Fecha Vencimiento\n";
+
+            listaPrestamosGlobal.forEach(p => {
+                const nombre = p.clienteId ? p.clienteId.nombre : 'Desconocido';
+                const fecha = p.fechaVencimiento ? new Date(p.fechaVencimiento).toISOString().slice(0, 10) : '';
+                const estadoTxt = p.saldoPendiente > 0 ? 'ACTIVO' : 'PAGADO';
+                csvContent += `"${nombre}",${p.montoPrestado},${p.interesPorcentaje},${p.plazoMeses},${p.montoTotal},${p.saldoPendiente},${estadoTxt},"${fecha}"\n`;
+            });
+
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", `Reporte_Prestamos_PyS_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function descargarBackup() {
+            window.open(`${API_URL}/backup`, '_blank');
+        }
+
+        async function eliminarPrestamo(id, nombreCliente) {
+            if (confirm(`¿Estás seguro de que deseas eliminar el préstamo de ${nombreCliente}?`)) {
+                await fetch(`${API_URL}/loans/${id}`, { method: 'DELETE' });
+                cargarTodo();
+            }
+        }
+
+async function registrarPago() {
+    try {
+        const selectElem = document.getElementById('selectPrestamo');
+        const prestamoId = selectElem ? selectElem.value : '';
+        const montoPago = document.getElementById('montoPago') ? document.getElementById('montoPago').value : '';
+        const tipoAbono = document.getElementById('tipoAbono') ? document.getElementById('tipoAbono').value : '';
+        const metodoPago = document.getElementById('metodoPago') ? document.getElementById('metodoPago').value : '';
+
+        // Validación en pantalla
+        if (!prestamoId || prestamoId === "") {
+            alert('⚠️ Por favor selecciona un préstamo de la lista.');
+            return;
+        }
+
+        if (!montoPago || Number(montoPago) <= 0) {
+            alert('⚠️ Por favor ingresa un monto válido a abonar.');
+            return;
+        }
+
+        const nombreClienteSel = selectElem.options[selectElem.selectedIndex] ? selectElem.options[selectElem.selectedIndex].text : 'Cliente';
+
+        // Petición al backend
+        const res = await fetch('/api/payments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ 
+    prestamoId: prestamoId, 
+    montoPago: Number(montoPago), 
+    metodoPago: (metodoPago || 'Efectivo').toUpperCase(), // Convertir a MAYÚSCULAS ('EFECTIVO', 'NEQUI', 'DAVIPLATA')
+    tipoAbono: tipoAbono || 'CAPITAL_E_INTERES' 
+})
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            
+            // Esta es la variable limpia que nos manda el backend
+            const capitalRestanteReal = Number(data.saldoCapital ?? data.nuevoSaldo ?? 0);
+
+            alert('✅ Abono registrado exitosamente');
+
+            // 1. Recibo PDF
+       if (confirm("¿Deseas imprimir o descargar el comprobante formal en PDF?")) {
+            const clienteConCapital = `${data.cliente || 'Cliente'} - Debe: $${capitalRestanteReal.toLocaleString()}`;
+            
+            // --- NUEVO: Agregamos el número de cuota al concepto del recibo ---
+            const textoConcepto = (tipoAbono === 'SOLO_INTERES' ? 'Pago Interés' : (tipoAbono === 'SOLO_CAPITAL' ? 'Abono Capital' : 'Abono Normal')) + 
+                                  ` (Cuota ${data.cuotaActual || 1} de ${data.plazoTotal || '-'})`;
+
+            imprimirComprobanteFormal({
+                cliente: clienteConCapital, // Dejas tu código de cliente intacto
+                cedula: data.cedula || 'N/A',
+                concepto: textoConcepto,     // <--- Usamos el concepto con la cuota incluida
+                metodo: metodoPago,
+                monto: montoPago,
+                saldoAnterior: capitalRestanteReal + Number(montoPago),
+                saldoNuevo: capitalRestanteReal
+            });
+        }
+
+            // 2. Comprobante WhatsApp
+            let detalleTipo = 'Abono Normal';
+            if (tipoAbono === 'SOLO_INTERES') detalleTipo = 'Pago de Interés Mensual';
+            if (tipoAbono === 'SOLO_CAPITAL') detalleTipo = 'Abono Directo a Capital';
+
+            const mensaje = `Hola! 🤝 Se ha registrado tu abono en *PyS - Préstamos y Soluciones*:\n\n` +
+        `*Monto Abonado:* $${Number(montoPago).toLocaleString()}\n` +
+        `*Concepto:* ${detalleTipo}\n` +
+        `*Cuota N°:* ${data.cuotaActual || 1} de ${data.plazoTotal || '-'}\n` + // <--- ¡Esta línea es la nueva!
+        `*Método de Pago:* ${metodoPago}\n` +
+        `*Capital Restante:* $${capitalRestanteReal.toLocaleString()}\n` +
+        `*Estado Préstamo:* ${data.estado || 'ACTIVO'}\n\n` +
+        `¡Gracias por tu confianza!`;
+
+            if (confirm('¿Deseas enviar el comprobante de pago por WhatsApp al cliente?')) {
+                window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+            }
+
+            location.reload();
+        } else {
+            alert('⚠️ Atención: ' + (data.mensaje || 'Error al procesar el abono en el servidor.'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ocurrió un error al conectar con el servidor.');
+    }
+}
+
+    function filtrarTabla() {
+    const texto = document.getElementById('inputBuscador').value.toLowerCase().trim();
+    const filas = document.querySelectorAll('#tablaPrestamos tr');
+    
+    let filasVisiblesCount = 0;
+
+    filas.forEach(fila => {
+        // Busca en todo el texto de la fila (Nombre del cliente, Cédula, etc.)[span_2](start_span)[span_2](end_span)
+        const contenidoFila = fila.innerText.toLowerCase();
+        
+        if (contenidoFila.includes(texto)) {
+            fila.style.display = '';
+            filasVisiblesCount++; // Contamos cuántas filas van quedando visibles
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+
+    // 🌟 LÓGICA SEGURA PARA EL BOTÓN DE EDITAR:
+    const btnEditar = document.getElementById('btnEditarClienteActual');
+    if (btnEditar) {
+        // Si hay texto escrito y queda exactamente 1 cliente visible, mostramos el botón
+        if (texto.length > 0 && filasVisiblesCount === 1) {
+            btnEditar.style.display = 'inline-block';
+        } else {
+            // De lo contrario, se oculta para no estorbar
+            btnEditar.style.display = 'none';
+        }
+    }
+}
+
+function imprimirComprobanteFormal(datos) {
+    if (!datos) return;
+
+    // 1. Extraer cédula limpia
+    let cedulaFinal = 'N/A';
+    if (datos.cedula) {
+        let partes = datos.cedula.split('-');
+        cedulaFinal = partes[partes.length - 1].trim();
+    }
+    if (cedulaFinal.toLowerCase().includes('debe')) {
+        cedulaFinal = 'N/A';
+    }
+
+    // 2. Rellenar campos del recibo
+    document.getElementById('reciboCliente').textContent = datos.cliente || 'N/A';
+    document.getElementById('reciboCedula').textContent = cedulaFinal;
+    document.getElementById('reciboConcepto').textContent = datos.concepto || 'Abono Normal';
+    document.getElementById('reciboMetodo').textContent = datos.metodo || 'Efectivo';
+    document.getElementById('reciboMonto').textContent = '$' + Number(datos.monto || 0).toLocaleString();
+
+    // 3. Comprobante ID
+    const numeroUnico = datos.id || datos.comprobanteId || datos.idPago || datos.codigo || datos.numeroComprobante || (datos.pago && datos.pago.id) || Date.now().toString().slice(-6);
+    document.getElementById('reciboId').textContent = `PYS-${numeroUnico}`;
+
+    // 4. Estado del Préstamo (Línea 1015 en el HTML)
+    const spanEstadoCuota = document.getElementById('reciboEstadoCuota');
+    if (spanEstadoCuota) {
+        spanEstadoCuota.textContent = '¡AL DÍA CON SU COMPROMISO!';
+    }
+
+    // Control del mensaje especial de cancelación
+const badge = document.getElementById('reciboEstadoBadge');
+if (badge) {
+    // 1. Siempre lo ocultamos y limpiamos por defecto
+    badge.textContent = '';
+    badge.style.display = 'none';
+
+    // 2. Evaluamos si el concepto corresponde a Capital + Intereses o Cancelación Total
+    const concepto = (datos && datos.concepto) ? datos.concepto.toLowerCase() : '';
+    const saldoRestante = Number(datos.saldoNuevo !== undefined ? datos.saldoNuevo : datos.saldoRestante || 0);
+
+    const esCapitalEInteres = concepto.includes('capital') || 
+                              concepto.includes('interés') || 
+                              concepto.includes('interes') || 
+                              concepto.includes('cancelación') || 
+                              concepto.includes('cancelacion') || 
+                              concepto.includes('total');
+
+    // 3. Solo si cumple la condición, mostramos el mensaje
+    if (saldoRestante <= 0 || esCapitalEInteres) {
+        badge.textContent = '¡CUOTA DEL PRÉSTAMO CANCELADO EN SU TOTALIDAD!';
+        badge.style.color = '#155724';
+        badge.style.backgroundColor = '#d4edda';
+        badge.style.border = '1px solid #c3e6cb';
+        badge.style.display = 'block';
+    }
+}
+
+    // 6. Abrir ventana de impresión
+    window.print();
+}
+
+async function cargarMetricasGanancias() {
+    try {
+        const res = await fetch('/api/payments/metricas/ganancias');
+        const data = await res.json();
+        
+        // Usamos los IDs exactos de tus tarjetas (statGananciaHoy y statGananciaMes)
+        const elemHoy = document.getElementById('statGananciaHoy');
+        const elemMes = document.getElementById('statGananciaMes');
+
+        if (elemHoy) elemHoy.innerText = '$' + (data.gananciaHoy || 0).toLocaleString();
+        if (elemMes) elemMes.innerText = '$' + (data.gananciaMes || 0).toLocaleString();
+    } catch (error) {
+        console.error('Error cargando métricas de ganancias:', error);
+    }
+}
+let prestamoSeleccionadoHistorial = null;
+
+async function verHistorialCliente(prestamoId, nombreCliente, cedula, saldoPrestamo) {
+    try {
+        let res = await fetch(`/api/payments/prestamo/${prestamoId}`);
+        let pagos = await res.json();
+
+        if (!Array.isArray(pagos) || pagos.length === 0) {
+            res = await fetch(`/api/payments/cliente/${prestamoId}`);
+            pagos = await res.json();
+        }
+
+        prestamoSeleccionadoHistorial = { 
+            prestamoId: prestamoId, 
+            nombreCliente: nombreCliente || 'Cliente', 
+            cedula: cedula && cedula !== 'undefined' && cedula !== 'null' ? cedula : 'N/A',
+            saldoPrestamo: Number(saldoPrestamo || 0)
+        };
+
+        const modal = document.getElementById('modalHistorial');
+        const titulo = document.getElementById('modalHistorialTitulo');
+        const tablaBody = document.getElementById('tablaHistorialBody');
+
+        if (titulo) titulo.innerText = `Historial de Pagos - ${nombreCliente}`;
+        if  (tablaBody) tablaBody.innerHTML = '';
+
+        if (!Array.isArray(pagos) || pagos.length === 0) {
+            if (tablaBody) {
+                tablaBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 15px; color: #777;">No se encontraron pagos registrados para este cliente.</td></tr>`;
+            }
+        } else {
+            // Recorremos los pagos para calcular el saldo de capital progresivo si la base de datos no lo trae
+            let saldoActualCalculado = Number(saldoPrestamo || 0);
+            
+            pagos.forEach((pago, index) => {
+                const numeroCuota = pagos.length - index;
+                const fecha = pago.fechaPago ? new Date(pago.fechaPago).toLocaleDateString('es-CO') : 'N/A';
+                const montoVal = Number(pago.montoPago || pago.monto || 0);
+                const montoFormat = montoVal.toLocaleString();
+                const ganancia = Number(pago.ganancia || 0).toLocaleString();
+                const metodo = pago.metodoPago || 'EFECTIVO';
+                
+                // Si el pago trae un campo explícito de capital, lo usamos; si no, estimamos la porción de capital (ej: el monto menos los intereses estimados o el abono)
+                const abonoCapReal = Number(pago.abonoCapital ?? pago.montoCapital ?? (montoVal > 15000 ? montoVal - 15000 : montoVal));
+                
+                // Si el pago ya trae el saldo guardado lo respetamos, sino usamos el cálculo acumulativo
+                const saldoCap = Number(pago.saldoCapitalRestante ?? pago.saldoCapital ?? pago.nuevoSaldo ?? saldoActualCalculado);
+                
+                // Actualizamos el acumulado para la siguiente iteración del historial
+                saldoActualCalculado = saldoCap - abonoCapReal;
+
+                const tipoAbono = pago.tipoAbono || 'Abono Normal';
+                let detalleTipo = 'Abono Normal';
+                if (tipoAbono === 'SOLO_INTERES') detalleTipo = 'Pago de Interés Mensual';
+                if (tipoAbono === 'SOLO_CAPITAL') detalleTipo = 'Abono Directo a Capital';
+
+                if (tablaBody) {
+                    tablaBody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #444;">
+                            <td style="padding: 10px; font-weight: bold;">${numeroCuota}</td>
+                            <td style="padding: 10px;">${fecha}</td>
+                            <td style="padding: 10px; color: #2ecc71; font-weight: bold;">$${montoFormat}</td>
+                            <td style="padding: 10px; color: #3498db;">$${ganancia}</td>
+                            <td style="padding: 10px;">
+                                <span style="background: #ffffff; color: #2c3e50; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                                    ${metodo}
+                                </span>
+                            </td>
+                            <td style="padding: 10px; font-weight: bold;">
+        ${pago.calificacion || '🟢 Cliente Confiable'}
+    </td>
+                            <td style="padding: 10px; display: flex; gap: 6px;">
+                                <button onclick="reimprimirPDF('${pago._id}', ${montoVal}, '${detalleTipo}', ${numeroCuota}, '${metodo}', ${saldoCap})" 
+                                        style="background:#27ae60; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">📄 PDF</button>
+                                <button onclick="reenviarWhatsApp('${pago._id}', ${montoVal}, '${detalleTipo}', ${numeroCuota}, '${metodo}', ${saldoCap}, '${pago.telefonoCliente || ''}')" 
+                                        style="background:#25D366; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">📲 WA</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        if (modal) modal.style.display = 'flex';
+    } catch (error) {
+        console.error('Error al cargar historial:', error);
+        alert('Error al obtener el historial de pagos del cliente.');
+    }
+}
+
+function reimprimirPDF(pagoId, monto, tipoAbono, cuotaNum, metodo, saldoCapital) {
+    const info = prestamoSeleccionadoHistorial || { nombreCliente: 'Cliente', cedula: 'N/A', saldoPrestamo: 0 };
+    const saldoFinal = Number(saldoCapital) >= 0 ? Number(saldoCapital) : Number(info.saldoPrestamo || 0);
+    const concepto = `${tipoAbono} (Cuota ${cuotaNum})`;
+
+    if (typeof imprimirComprobanteFormal === 'function') {
+        imprimirComprobanteFormal({
+            cliente: info.nombreCliente,
+            cedula: info.cedula,
+            concepto: concepto,
+            metodo: metodo,
+            monto: monto,
+            saldoAnterior: saldoFinal + Number(monto),
+            saldoNuevo: saldoFinal // Muestra el capital real restante
+        });
+    } else {
+        alert('La función de impresión de comprobantes no está definida.');
+    }
+}
+
+function reenviarWhatsApp(pagoId, monto, tipoAbono, cuotaNum, metodo, saldoCapital, telefono) {
+    const info = prestamoSeleccionadoHistorial || { saldoPrestamo: 0 };
+    const saldoFinal = Number(saldoCapital) >= 0 ? Number(saldoCapital) : Number(info.saldoPrestamo || 0);
+    
+    let mensaje = `Hola! 🤝 Reenviamos el comprobante de tu abono en *PyS - Préstamos y Soluciones*:\n\n` +
+        `*Monto Abonado:* $${Number(monto).toLocaleString()}\n` +
+        `*Concepto:* ${tipoAbono} (Cuota ${cuotaNum})\n` +
+        `*Método de Pago:* ${metodo}\n`;
+        
+    if (saldoFinal >= 0) {
+        mensaje += `*Capital Restante:* $${saldoFinal.toLocaleString()}\n`;
+    }
+    
+    mensaje += `\n¡Gracias por tu confianza!`;
+
+    const url = `https://api.whatsapp.com/send?phone=${telefono || ''}&text=${encodeURIComponent(mensaje)}`;
+    window.open(url, '_blank');
+}
+
+function cerrarModalHistorial() {
+    document.getElementById('modalHistorial').style.display = 'none';
+}
+
+// Variable global limpia para recordar el nombre con el que abriste el modal
+let nombreOriginalParaEditar = "";
+
+function prepararEdicionClienteFiltrado() {
+    const filas = document.querySelectorAll('#tablaPrestamos tr');
+    let filaVisible = null;
+
+    filas.forEach(fila => {
+        if (fila.style.display !== 'none' && fila.innerText.trim() !== '') {
+            filaVisible = fila;
+        }
+    });
+
+    if (!filaVisible) {
+        alert("Por favor, usa el buscador para filtrar y dejar un solo cliente visible.");
+        return;
+    }
+
+    const celdas = filaVisible.querySelectorAll('td');
+    
+    if (celdas.length > 0) {
+        const nombreCliente = celdas[0] ? celdas[0].textContent.trim() : "";
+        nombreOriginalParaEditar = nombreCliente;
+
+        // Rellenamos los campos del modal
+        document.getElementById('editNombre').value = nombreCliente;
+        document.getElementById('editCedula').value = ""; 
+        document.getElementById('editTelefono').value = ""; 
+        document.getElementById('editDireccion').value = ""; 
+
+        // Abrimos el modal usando el ID correcto que está en tu HTML
+        document.getElementById('modalEditarCliente').style.display = 'flex';
+    }
+}
+
+// 2. Al guardar, usamos ese nombre viejo para buscar y los nuevos datos para actualizar
+async function guardarCambiosCliente() {
+    const nuevoNombre = document.getElementById('editNombre').value;
+    const nuevaCedula = document.getElementById('editCedula').value;
+    const nuevoTelefono = document.getElementById('editTelefono').value;
+    const nuevaDireccion = document.getElementById('editDireccion').value;
+
+    try {
+        const respuesta = await fetch('/actualizar-cliente', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nombreOriginal: nombreOriginalParaEditar,
+                nuevoNombre,
+                nuevaCedula,
+                nuevoTelefono,
+                nuevaDireccion
+            })
+        });
+
+        const resultado = await respuesta.json();
+
+        if (resultado.exito) {
+            alert(resultado.mensaje);
+            document.getElementById('modalEditarCliente').style.display = 'none';
+            location.reload();
+        } else {
+            alert("Atención: " + resultado.mensaje);
+        }
+    } catch (error) {
+        console.error("Error de red:", error);
+        alert("Ocurrió un error al intentar conectar con el servidor.");
+    }
+}
+
+    </script>
+    <!-- Plantilla de Recibo Formal para Imprimir / PDF -->
+<div id="seccionRecibo" style="display: none;">
+  <div style="max-width: 400px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; border: 2px solid #111; border-radius: 8px; color: #000; background: #fff;">
+    
+    <div style="text-align: center; border-bottom: 2px dashed #333; padding-bottom: 12px; margin-bottom: 15px;">
+    <!-- Logo más prominente y centrado -->
+    <img src="/logo.png" alt="Logo PyS" style="max-height: 180px; width: auto; max-width: 380px; display: block; margin: 0 auto 10px auto; object-fit: contain;">
+    
+    <p style="margin: 4px 0 0; font-size: 12px; font-weight: bold; color: #333;" id="reciboFechaHora"></p>
+</div>
+
+    <div style="font-size: 13px; line-height: 1.6;">
+      <p style="margin: 3px 0;"><strong>Comprobante N°:</strong> <span id="reciboId"></span></p>
+      <p style="margin: 3px 0;"><strong>Cliente:</strong> <span id="reciboCliente"></span></p>
+      <p style="margin: 3px 0;"><strong>Cédula:</strong> <span id="reciboCedula"></span></p>
+      <hr style="border: 0; border-top: 1px dashed #aaa; margin: 10px 0;">
+      
+      <p style="margin: 3px 0;"><strong>Concepto de Pago:</strong> <span id="reciboConcepto"></span></p>
+      <p style="margin: 3px 0;"><strong>Método de Pago:</strong> <span id="reciboMetodo"></span></p>
+      <p style="margin: 3px 0; font-size: 15px;"><strong>Monto Abonado:</strong> <span id="reciboMonto" style="font-weight: bold;"></span></p>
+      <hr style="border: 0; border-top: 1px dashed #aaa; margin: 10px 0;">
+      
+      <div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 8px;">
+    <p><strong>Avance del Préstamo:</strong> <span id="reciboCuotasInfo">Cuota registrada</span></p>
+    <p><strong>Estado del Préstamo:</strong> <span id="reciboEstadoCuota" style="color: #2e7d32; font-weight: bold;">✅ ¡AL DÍA CON SU COMPROMISO!</span></p>
+</div>
+      <div id="reciboEstadoBadge" style="margin-top: 10px; padding: 6px; text-align: center; font-weight: bold; border-radius: 4px; display: none;"></div>
+    </div>
+
+    <div style="margin-top: 30px; text-align: center; border-top: 1px solid #000; padding-top: 5px; font-size: 11px;">
+      <p style="margin: 0;">Firma / Sello Autorizado</p>
+      <p style="margin: 2px 0 0 0; font-weight: bold;">PyS - Préstamos y Soluciones</p>
+      <p style="margin: 10px 0 0 0; font-size: 10px; color: #666;">¡Gracias por su pago!</p>
+    </div>
+
+  </div>
+</div>
+<!-- Modal de Historial de Pagos -->
+<div id="modalHistorial" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #fff; border-radius: 8px; width: 90%; max-width: 650px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 id="modalHistorialTitulo" style="margin: 0; color: #333;">📋 Historial de Pagos</h3>
+            <button onclick="cerrarModalHistorial()" style="background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold;">✕ Cerrar</button>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
+            <thead>
+                <tr style="background-color: #f4f6f9; text-align: left; border-bottom: 2px solid #ddd;">
+                    <th style="padding: 10px;">#</th>
+                    <th style="padding: 10px;">Fecha</th>
+                    <th style="padding: 10px;">Abono</th>
+                    <th style="padding: 10px;">Ganancia</th>
+                    <th style="padding: 10px;">Método</th>
+                </tr>
+            </thead>
+            <tbody id="tablaHistorialBody">
+                <!-- Se llena dinámicamente -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- Estilos especiales para que al imprimir solo se vea el recibo -->
+<style>
+  @media print {
+    body * { visibility: hidden; }
+    #seccionRecibo, #seccionRecibo * { visibility: visible; }
+    #seccionRecibo { 
+      display: block !important; 
+      position: absolute; 
+      left: 0; 
+      top: 0; 
+      width: 100%; 
+    }
+  }
+</style>
+
+<!-- 🌟 VENTANA EMERGENTE (MODAL) PARA EDITAR CLIENTE -->
+<div id="modalEditarCliente" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: #2a2a2a; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); color: white;">
+        <h3 style="color: #f39c12; margin-bottom: 15px;">✏️ Editar Datos del Cliente</h3>
+        
+        <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">Nombre Completo:</label>
+            <input type="text" id="editNombre" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #1a1a1a; color: white;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">Cédula de Ciudadanía:</label>
+            <input type="text" id="editCedula" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #1a1a1a; color: white;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">Número de Contacto:</label>
+            <input type="text" id="editTelefono" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #1a1a1a; color: white;">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">Dirección:</label>
+            <input type="text" id="editDireccion" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #1a1a1a; color: white;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" onclick="cerrarModalEdicion()" style="padding: 8px 15px; background: #7f8c8d; color: white; border: none; border-radius: 5px; cursor: pointer;">Cancelar</button>
+            <button type="button" onclick="guardarCambiosCliente()" style="padding: 8px 15px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer;">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
