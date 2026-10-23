@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Payment = require('../models/Payment');
 const Loan = require('../models/Loan');
+const ExcelJS = require('exceljs');
 
 // 1. REGISTRAR UN PAGO
 router.post('/', async (req, res) => {
@@ -173,6 +174,140 @@ router.get('/metricas/ganancias', async (req, res) => {
     } catch (error) {
         console.error('Error al calcular métricas de ganancias:', error);
         res.status(500).json({ message: 'Error al obtener métricas', error: error.message });
+    }
+});
+
+// EXPORTAR RECAUDOS DEL DÍA EN EXCEL CON TOTALIZADO
+router.get('/exportar-recaudos-dia', async (req, res) => {
+    try {
+        const ahora = new Date();
+        // Usamos el mismo rango exacto de hoy que ya tienes en tus métricas
+        const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0, 0);
+        const finHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 23, 59, 59);
+
+        // Buscamos los pagos de hoy usando 'fechaPago' (como tienes en tu base de datos)
+        const pagosHoy = await Payment.find({
+            fechaPago: { $gte: inicioHoy, $lte: finHoy }
+        }).populate('clientId'); // Ajusta 'clientId' si en tu modelo de pago se llama diferente la relación
+
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Caja del Día');
+
+        ws.views = [{ showGridLines: true }];
+        const primaryColor = '1B365D';
+        const fontFam = 'Segoe UI';
+
+        // Título Principal
+        ws.mergeCells('A1:F1');
+        const titleCell = ws.getCell('A1');
+        titleCell.value = "SISTEMA PyS - REPORTE DE RECAUDOS DEL DÍA";
+        titleCell.font = { name: fontFam, size: 14, bold: true, color: { argb: 'FFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryColor } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'center' };
+        ws.getRow(1).height = 30;
+
+        // Metadatos
+        ws.getCell('A3').value = "Fecha:";
+        ws.getCell('A3').font = { name: fontFam, size: 10, bold: true };
+        ws.getCell('B3').value = new Date().toLocaleDateString();
+        ws.getCell('B3').font = { name: fontFam, size: 10 };
+
+        // Cabeceras de la Tabla
+        const headers = ["ID Pago", "Cliente", "Fecha/Hora", "Método", "Ganancia / Interés", "Valor Abonado"];
+        const headerRowIdx = 5;
+        
+        headers.forEach((header, idx) => {
+            const cell = ws.getCell(headerRowIdx, idx + 1);
+            cell.value = header;
+            cell.font = { name: fontFam, size: 11, bold: true, color: { argb: 'FFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryColor } };
+            cell.alignment = { horizontal: 'center', vertical: 'center' };
+        });
+        ws.getRow(headerRowIdx).height = 24;
+
+        // Rellenar datos
+        let currentRow = headerRowIdx + 1;
+        let sumaTotalAbonos = 0;
+        let sumaTotalGanancias = 0;
+
+        if (pagosHoy && pagosHoy.length > 0) {
+            pagosHoy.forEach((p, index) => {
+                const valorAbonado = p.montoAbonado || p.monto || 0; // Ajusta según tu campo de abono
+                const ganancia = p.ganancia || 0;
+                
+                sumaTotalAbonos += valorAbonado;
+                sumaTotalGanancias += ganancia;
+
+                ws.getCell(currentRow, 1).value = p._id.toString().slice(-6);
+                ws.getCell(currentRow, 2).value = p.clientId ? p.clientId.nombre : 'Cliente General';
+                ws.getCell(currentRow, 3).value = new Date(p.fechaPago).toLocaleTimeString();
+                ws.getCell(currentRow, 4).value = p.metodoPago || 'Efectivo';
+                
+                const ganCell = ws.getCell(currentRow, 5);
+                ganCell.value = ganancia;
+                ganCell.number_format = '"$" #,##0';
+                ganCell.alignment = { horizontal: 'right' };
+
+                const valCell = ws.getCell(currentRow, 6);
+                valCell.value = valorAbonado;
+                valCell.number_format = '"$" #,##0';
+                valCell.alignment = { horizontal: 'right' };
+
+                for (let c = 1; c <= 6; c++) {
+                    ws.getCell(currentRow, c).font = { name: fontFam, size: 10 };
+                    if (index % 2 === 1) {
+                        ws.getCell(currentRow, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F2F5F9' } };
+                    }
+                }
+                currentRow++;
+            });
+        } else {
+            ws.getCell(currentRow, 1).value = "No hay pagos registrados el día de hoy.";
+            currentRow++;
+        }
+
+        // Fila de Totalizados
+        currentRow++;
+        ws.getCell(currentRow, 4).value = "TOTAL DÍA:";
+        ws.getCell(currentRow, 4).font = { name: fontFam, size: 11, bold: true };
+        ws.getCell(currentRow, 4).alignment = { horizontal: 'right' };
+
+        const totalGanCell = ws.getCell(currentRow, 5);
+        totalGanCell.value = sumaTotalGanancias;
+        totalGanCell.font = { name: fontFam, size: 11, bold: true };
+        totalGanCell.number_format = '"$" #,##0';
+
+        const totalCell = ws.getCell(currentRow, 6);
+        totalCell.value = sumaTotalAbonos;
+        totalCell.font = { name: fontFam, size: 11, bold: true };
+        totalCell.number_format = '"$" #,##0';
+
+        // Ajustar automáticamente el ancho de las columnas con un límite prudente
+        ws.columns.forEach((column, index) => {
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, (cell, rowNumber) => {
+                // Ignoramos la fila 1 (el título largo) para que no estire la columna A de más
+                if (rowNumber !== 1 && cell.value) {
+                    let columnLength = cell.value.toString().length;
+                    if (columnLength > maxLength) {
+                        maxLength = columnLength;
+                    }
+                }
+            });
+            // Ancho dinámico pero limitado entre 15 y 35 para que se vea estético
+            column.width = Math.min(Math.max(maxLength + 3, 12), 35);
+        });
+
+        // Descarga del archivo
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=Reporte_Caja_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error("Error al exportar recaudos:", error);
+        res.status(500).send("Hubo un error al generar el reporte de Excel.");
     }
 });
 
