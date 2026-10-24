@@ -169,8 +169,8 @@ app.put('/actualizar-cliente', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = 'mongodb+srv://jonalex9219boss_db_user:6BXglyziwbcUNDGv@cluster0.v5peubx.mongodb.net/sistema-prestamos?retryWrites=true&w=majority';
+const PORT = process.env.PORT || 10000;
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://jonalex9219boss_db_user:68XglyziwbcUNDGv@cluster0.v5peubx.mongodb.net/sistema-prestamos?retryWrites=true&w=majority";
 
 mongoose.connect(MONGO_URI)
     .then(() => {
