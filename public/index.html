@@ -341,10 +341,14 @@
 
                 <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
                 <small style="color: #aaa;">Inyección de Capital / Caja Inicial ($):</small>
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="cajaInicialInput" placeholder="Ej: 5000000" style="margin: 5px 0;">
-                    <button style="width: auto; padding: 0 15px; margin: 5px 0;" onclick="fijarCajaInicial()">Fijar</button>
-                </div>
+                <input type="number" id="cajaInicialInput" placeholder="Ej: 5000000" style="margin: 5px 0; width: 100%;">
+
+<select id="origenCaja" style="margin: 5px 0; width: 100%; padding: 8px;">
+    <option value="propio">Capital Propio</option>
+    <option value="banco">Préstamo Bancario / Externo</option>
+</select>
+
+<button style="width: 100%; padding: 8px; margin-top: 5px;" onclick="fijarCajaInicial()">Fijar Inyección</button>
             </div>
 
             <div class="card">
@@ -352,10 +356,11 @@
                 <input type="text" id="descGasto" placeholder="Ej: Cuota Banco Davivienda">
                 <input type="number" id="montoGasto" placeholder="Monto Pagado ($)">
                 <select id="catGasto">
-                    <option value="Cuota Banco">Cuota Banco / Préstamo Externo</option>
-                    <option value="Gasto Operativo">Gasto Operativo / Papelería</option>
-                    <option value="Otro Gasto">Otro Egreso</option>
-                </select>
+    <option value="Cuota Banco">Cuota Banco / Préstamo Externo</option>
+    <option value="Capital Propio">Capital Propio</option>
+    <option value="Gasto Operativo">Gasto Operativo / Papelería</option>
+    <option value="Otro Egreso">Otro Egreso</option>
+</select>
                 <button style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;" onclick="registrarGasto()">Registrar Egreso</button>
             </div>
         </div>
@@ -510,17 +515,26 @@
         }
 
         async function fijarCajaInicial() {
-            const monto = Number(document.getElementById('cajaInicialInput').value);
-            const res = await fetch(`${API_URL}/stats/caja-inicial`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ monto })
-            });
-            if (res.ok) {
-                alert('✅ Capital base actualizado');
-                cargarEstadisticas();
-            }
-        }
+    const monto = document.getElementById('cajaInicialInput').value;
+    const origen = document.getElementById('origenCaja').value; // <--- Capturamos si es propio o del banco
+
+    if (!monto) {
+        alert('⚠️ Ingrese un monto válido para la inyección');
+        return;
+    }
+
+    const res = await fetch(`${API_URL}/caja-inicial`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ monto: Number(monto), origen }) // <--- Lo enviamos al backend
+    });
+
+    if (res.ok) {
+        alert('✅ Inyección de capital registrada correctamente');
+        document.getElementById('cajaInicialInput').value = '';
+        cargarTodo();
+    }
+}
 
         async function registrarCliente() {
             try {
@@ -773,28 +787,31 @@ async function consultarCobrosMensuales() {
         }
 
         async function registrarGasto() {
-            const descripcion = document.getElementById('descGasto').value;
-            const monto = document.getElementById('montoGasto').value;
-            const categoria = document.getElementById('catGasto').value;
+    const descripcion = document.getElementById('descGasto').value;
+    const monto = document.getElementById('montogasto').value;
+    const categoria = document.getElementById('catGasto').value; // <--- Toma la categoría seleccionada
 
-            if (!descripcion || !monto) {
-                alert('⚠️ Ingrese descripción y monto del pago');
-                return;
-            }
+    if (!descripcion || !monto) {
+        alert('⚠️ Ingrese descripción y monto del pago');
+        return;
+    }
 
-            const res = await fetch(`${API_URL}/expenses`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ descripcion, monto, categoria })
-            });
+    // Si la categoría es "Capital Propio", podemos asignarle su origen correspondiente de forma interna
+    const origen = categoria === 'Capital Propio' ? 'propio' : 'banco';
 
-            if (res.ok) {
-                alert('🏦 Pago/Egreso registrado correctamente');
-                document.getElementById('descGasto').value = '';
-                document.getElementById('montoGasto').value = '';
-                cargarTodo();
-            }
-        }
+    const res = await fetch(`${API_URL}/expenses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ descripcion, monto: Number(monto), categoria, origen })
+    });
+
+    if (res.ok) {
+        alert('✅ Movimiento registrado correctamente');
+        document.getElementById('descGasto').value = '';
+        document.getElementById('montogasto').value = '';
+        cargarTodo();
+    }
+}
 
         async function cargarGastos() {
             try {

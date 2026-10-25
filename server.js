@@ -17,11 +17,12 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
-// Esquema para Gastos / Pasivos Bancarios
+// Esquema para Gastos / Pasivos Bancarios y Movimientos
 const ExpenseSchema = new mongoose.Schema({
     descripcion: { type: String, required: true },
     monto: { type: Number, required: true },
     categoria: { type: String, default: 'Cuota Banco' },
+    origen: { type: String, enum: ['banco', 'propio'], default: 'propio' }, // <--- Nuevo campo clave
     fecha: { type: Date, default: Date.now }
 });
 const Expense = mongoose.model('Expense', ExpenseSchema);
@@ -30,7 +31,8 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/payments', paymentRoutes);
 
-let cajaInicial = 0;
+let cajaInicialPropia = 0;
+let cajaInicialBanco = 0;
 
 // Obtener estadísticas globales
 app.get('/api/stats', async (req, res) => {
@@ -49,26 +51,38 @@ app.get('/api/stats', async (req, res) => {
             totalMontoConInteres += p.montoTotal || 0;
         });
 
-        let totalRecaudadoAbonos = 0;
+        let totalRecaudoAbonos = 0;
         pagos.forEach(p => {
-            totalRecaudadoAbonos += p.montoPago || 0;
+            totalRecaudoAbonos += p.montoPago || 0;
         });
 
         let totalGastosBancarios = 0;
+        let totalGastosPropios = 0;
+
         gastos.forEach(g => {
-            totalGastosBancarios += g.monto || 0;
+            if (g.origen === 'banco') {
+                totalGastosBancarios += g.monto || 0;
+            } else {
+                totalGastosPropios += g.monto || 0;
+            }
         });
 
         const totalInteresesProyectados = totalMontoConInteres - totalPrestado;
-        const cajaDisponible = cajaInicial + totalRecaudadoAbonos - totalPrestado - totalGastosBancarios;
+        
+        // Sumamos ambas fuentes de inyección de capital
+        const cajaTotalInicial = cajaInicialPropia + cajaInicialBanco;
+        const cajaDisponible = cajaTotalInicial + totalRecaudoAbonos - totalPrestado - totalGastosBancarios - totalGastosPropios;
 
         res.json({
-            cajaInicial,
+            cajaInicial: cajaTotalInicial,
+            cajaInicialPropia,
+            cajaInicialBanco,
             cajaDisponible,
             totalPrestado,
             totalSaldoPendiente,
-            totalRecaudadoAbonos,
+            totalRecaudoAbonos,
             totalGastosBancarios,
+            totalGastosPropios,
             totalInteresesProyectados,
             prestamosActivos: prestamos.filter(p => p.saldoPendiente > 0).length
         });
@@ -77,10 +91,22 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-app.post('/api/stats/caja-inicial', (req, res) => {
-    const { monto } = req.body;
-    cajaInicial = Number(monto) || 0;
-    res.json({ mensaje: 'Caja inicial actualizada', cajaInicial });
+// Ruta para Registrar la Inyección de Capital separando el origen
+app.post('/api/caja-inicial', (req, res) => {
+    try {
+        const { monto, origen } = req.body;
+        const valor = Number(monto) || 0;
+
+        if (origen === 'propio') {
+            cajaInicialPropia += valor;
+        } else {
+            cajaInicialBanco += valor;
+        }
+
+        res.json({ success: true, mensaje: 'Inyección registrada y diferenciada', cajaInicialPropia, cajaInicialBanco });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Rutas para Gastos / Pasivos Bancarios
@@ -95,8 +121,13 @@ app.get('/api/expenses', async (req, res) => {
 
 app.post('/api/expenses', async (req, res) => {
     try {
-        const { descripcion, monto, categoria } = req.body;
-        const nuevoGasto = new Expense({ descripcion, monto: Number(monto), categoria });
+        const { descripcion, monto, categoria, origen } = req.body;
+        const nuevoGasto = new Expense({ 
+            descripcion, 
+            monto: Number(monto), 
+            categoria,
+            origen: origen || 'propio' // Si no se envía, por defecto toma 'propio'
+        });
         await nuevoGasto.save();
         res.status(201).json(nuevoGasto);
     } catch (err) {
