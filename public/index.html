@@ -970,7 +970,7 @@ async function registrarPago() {
         const nombreClienteSel = selectElem.options[selectElem.selectedIndex] ? selectElem.options[selectElem.selectedIndex].text : 'Cliente';
 
         // Petición al backend
-        const res = await fetch('/api/payments', {
+        const res = await fetch(`${API_URL}/payments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
        body: JSON.stringify({ 
