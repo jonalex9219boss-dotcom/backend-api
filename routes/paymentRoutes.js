@@ -169,6 +169,17 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// OBTENER TODOS LOS PAGOS (Para mostrarlos en la tablita)
+router.get('/', async (req, res) => {
+    try {
+        const pagos = await Payment.find().sort({ fechaPago: -1 });
+        res.json(pagos);
+    } catch (error) {
+        console.error('Error al obtener pagos:', error);
+        res.status(500).json({ message: 'Error en el servidor al obtener los pagos' });
+    }
+});
+
 // 2. OBTENER MÉTRICAS DE GANANCIAS (HOY Y MES)
 router.get('/metricas/ganancias', async (req, res) => {
     try {

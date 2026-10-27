@@ -339,14 +339,6 @@
                 </select>
                 <button onclick="registrarPago()">Registrar Abono</button>
 
-<!-- Sección visual para ver los últimos pagos y poder borrarlos si hubo error -->
-<div class="mt-4 p-4 bg-dark rounded">
-    <h4>Últimos Pagos Registrados</h4>
-    <div id="listaUltimosPagos" class="text-white">
-        <!-- Se llena dinámicamente con JavaScript -->
-    </div>
-</div>
-
                 <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
                 <small style="color: #aaa;">Inyección de Capital / Caja Inicial ($):</small>
                 <input type="number" id="cajaInicialInput" placeholder="Ej: 5000000" style="margin: 5px 0; width: 100%;">
@@ -372,6 +364,14 @@
                 <button style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;" onclick="registrarGasto()">Registrar Egreso</button>
             </div>
         </div>
+
+        <!-- Sección visual para ver los últimos pagos y poder borrarlos si hubo error -->
+<div class="mt-4 p-4 bg-dark rounded">
+    <h4>Últimos Pagos Registrados</h4>
+    <div id="listaUltimosPagos" class="text-white">
+        <!-- Se llena dinámicamente con JavaScript -->
+    </div>
+</div>
 
         <!-- REPORTE MENSUAL DE COBROS -->
 <div class="card">
@@ -1044,8 +1044,60 @@ async function registrarPago() {
     }
 }
 
+// Función para cargar y pintar la tabla de los últimos pagos
+async function cargarUltimosPagos() {
+    try {
+        const res = await fetch(`${API_URL}/payments`);
+        if (!res.ok) return;
+        const pagos = await res.json();
+        
+        const contenedor = document.getElementById('listaUltimosPagos');
+        if (!contenedor) return;
+
+        if (pagos.length === 0) {
+            contenedor.innerHTML = '<p class="text-muted">No hay pagos registrados aún.</p>';
+            return;
+        }
+
+        let html = `
+            <div class="table-responsive">
+                <table class="table table-dark table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Monto</th>
+                            <th>Método</th>
+                            <th>Fecha</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        // Muestra los últimos 5 pagos registrados ordenados del más reciente al más antiguo
+        pagos.slice(-5).reverse().forEach(p => {
+            const fechaFormateada = new Date(p.fechaPago).toLocaleDateString();
+            html += `
+                <tr>
+                    <td>$${(p.montoPago ?? 0).toLocaleString()}</td>
+                    <td>${p.metodoPago ?? 'EFECTIVO'}</td>
+                    <td>${fechaFormateada}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarPago('${p._id}')">Reversar</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        contenedor.innerHTML = html;
+    } catch (err) {
+        console.error('Error al cargar la lista de pagos:', err);
+    }
+}
+
+// Función para enviar la petición de eliminación al backend
 async function eliminarPago(pagoId) {
-    if (!confirm('¿Estás seguro de que deseas eliminar y reversar este pago?')) return;
+    if (!confirm('¿Estás seguro de que deseas eliminar y reversar este pago? El dinero volverá al saldo pendiente del préstamo.')) return;
     
     try {
         const res = await fetch(`${API_URL}/payments/${pagoId}`, {
@@ -1054,7 +1106,7 @@ async function eliminarPago(pagoId) {
         
         if (res.ok) {
             alert('✅ Pago reversado con éxito.');
-            location.reload(); // Recarga para actualizar las estadísticas y saldos
+            location.reload(); // Recarga la página para actualizar las estadísticas y saldos
         } else {
             alert('⚠️ Error al intentar eliminar el pago.');
         }
@@ -1062,6 +1114,11 @@ async function eliminarPago(pagoId) {
         console.error('Error de red:', err);
     }
 }
+
+// Cargar la lista automáticamente al abrir la página
+window.addEventListener('DOMContentLoaded', () => {
+    cargarUltimosPagos();
+});
 
     function filtrarTabla() {
     const texto = document.getElementById('inputBuscador').value.toLowerCase().trim();
