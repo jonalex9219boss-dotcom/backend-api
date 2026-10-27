@@ -67,7 +67,7 @@ console.log('Nueva fecha de vencimiento:', loan.fechaVencimiento);
 // Crear el pago guardando la ganancia y la calificación
 const nuevoPago = new Payment({
     prestamoId: loan._id,
-    monto: montoPago,
+    montoPago: monto,
     ganancia: gananciaCalculada,
     metodoPago: metodoPago || 'EFECTIVO',
     comentarios: comentarios || '',
