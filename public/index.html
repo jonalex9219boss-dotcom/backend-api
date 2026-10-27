@@ -799,7 +799,7 @@ async function consultarCobrosMensuales() {
 
         async function registrarGasto() {
     const descripcion = document.getElementById('descGasto').value;
-    const monto = document.getElementById('montogasto').value;
+    const monto = document.getElementById('montoGasto').value;
     const categoria = document.getElementById('catGasto').value; // <--- Toma la categoría seleccionada
 
     if (!descripcion || !monto) {
@@ -1161,7 +1161,7 @@ async function eliminarPago(pagoId) {
 
 // Cargar la lista automáticamente al abrir la página
 window.addEventListener('DOMContentLoaded', () => {
-    cargarUltimosPagos();
+    cargarPagosPorFecha();
 });
 
     function filtrarTabla() {
