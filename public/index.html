@@ -1028,8 +1028,8 @@ async function registrarPago() {
 
             location.reload();
         } else {
-            alert('⚠️ Atención: ' + (data.mensaje || 'Error al procesar el abono en el servidor.'));
-        }
+    alert('⚠️ Atención: Error al procesar el abono en el servidor.');
+}
     } catch (error) {
         console.error('Error:', error);
         alert('Ocurrió un error al conectar con el servidor.');
