@@ -9,13 +9,13 @@ router.post('/', async (req, res) => {
     try {
         const { prestamoId, montoPago, metodoPago, comentarios, tipoAbono } = req.body;
         
-        // Poblamos la información del préstamo
-       const loan = await Loan.findById(prestamoId).populate('clienteId', 'nombre cedula documento cedulaCiudadania identificacion');
+        // Buscamos el préstamo de forma segura para evitar que el servidor falle
+        const loan = await Loan.findById(prestamoId);
         
         if (!loan) {
             return res.status(404).json({ message: 'Préstamo no encontrado' });
         }
-
+        
         const monto = Number(montoPago);
         
       // 1. Cálculo de ganancia proporcional por cuota (Opción B)
