@@ -142,6 +142,33 @@ if (nuevoSaldo <= 0 || loan.saldoCapital <= 0) {
     }
 });
 
+// REVERSAR / ELIMINAR UN PAGO
+router.delete('/:id', async (req, res) => {
+    try {
+        const pagoId = req.params.id;
+        const pago = await Payment.findById(pagoId);
+        
+        if (!pago) {
+            return res.status(404).json({ message: 'Pago no encontrado' });
+        }
+
+        // Si quieres devolver el dinero al saldo del préstamo al borrarlo:
+        const loan = await Loan.findById(pago.prestamoId);
+        if (loan) {
+            // Revertimos el saldo dependiendo de cómo se registró
+            loan.saldoPendiente = (loan.saldoPendiente || 0) + pago.montoPago;
+            await loan.save();
+        }
+
+        // Eliminamos el pago
+        await Payment.findByIdAndDelete(pagoId);
+        res.json({ message: 'Pago reversado y eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar pago:', error);
+        res.status(500).json({ message: 'Error al eliminar el pago en el servidor' });
+    }
+});
+
 // 2. OBTENER MÉTRICAS DE GANANCIAS (HOY Y MES)
 router.get('/metricas/ganancias', async (req, res) => {
     try {

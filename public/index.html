@@ -339,6 +339,14 @@
                 </select>
                 <button onclick="registrarPago()">Registrar Abono</button>
 
+<!-- Sección visual para ver los últimos pagos y poder borrarlos si hubo error -->
+<div class="mt-4 p-4 bg-dark rounded">
+    <h4>Últimos Pagos Registrados</h4>
+    <div id="listaUltimosPagos" class="text-white">
+        <!-- Se llena dinámicamente con JavaScript -->
+    </div>
+</div>
+
                 <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
                 <small style="color: #aaa;">Inyección de Capital / Caja Inicial ($):</small>
                 <input type="number" id="cajaInicialInput" placeholder="Ej: 5000000" style="margin: 5px 0; width: 100%;">
@@ -1033,6 +1041,25 @@ async function registrarPago() {
     } catch (error) {
         console.error('Error:', error);
         alert('Ocurrió un error al conectar con el servidor.');
+    }
+}
+
+async function eliminarPago(pagoId) {
+    if (!confirm('¿Estás seguro de que deseas eliminar y reversar este pago?')) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/payments/${pagoId}`, {
+            method: 'DELETE'
+        });
+        
+        if (res.ok) {
+            alert('✅ Pago reversado con éxito.');
+            location.reload(); // Recarga para actualizar las estadísticas y saldos
+        } else {
+            alert('⚠️ Error al intentar eliminar el pago.');
+        }
+    } catch (err) {
+        console.error('Error de red:', err);
     }
 }
 
