@@ -169,10 +169,15 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-// OBTENER TODOS LOS PAGOS (Para mostrarlos en la tablita)
+// OBTENER TODOS LOS PAGOS CON DATOS DEL PRÉSTAMO Y CLIENTE
 router.get('/', async (req, res) => {
     try {
-        const pagos = await Payment.find().sort({ fechaPago: -1 });
+        const pagos = await Payment.find()
+            .populate({
+                path: 'prestamoId',
+                populate: { path: 'clienteId' } // Esto trae la información del cliente vinculado
+            })
+            .sort({ fechaPago: -1 });
         res.json(pagos);
     } catch (error) {
         console.error('Error al obtener pagos:', error);

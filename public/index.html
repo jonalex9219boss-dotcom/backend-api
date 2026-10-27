@@ -365,11 +365,15 @@
             </div>
         </div>
 
-        <!-- Sección visual para ver los últimos pagos y poder borrarlos si hubo error -->
-<div class="mt-4 p-4 bg-dark rounded">
-    <h4>Últimos Pagos Registrados</h4>
-    <div id="listaUltimosPagos" class="text-white">
-        <!-- Se llena dinámicamente con JavaScript -->
+        <!-- Tarjeta independiente para el Historial y Reversión por Fecha -->
+<div class="card mt-4 p-4 bg-dark rounded text-white">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Historial y Reversión de Pagos</h4>
+        <!-- El calendario para elegir el día exacto -->
+        <input type="date" id="filtroFechaPago" class="form-control w-auto bg-secondary text-white border-0" onchange="cargarPagosPorFecha()">
+    </div>
+    <div id="listaUltimosPagos">
+        <!-- Aquí se dibuja la tabla dinámicamente con los pagos del día seleccionado -->
     </div>
 </div>
 
@@ -1044,9 +1048,10 @@ async function registrarPago() {
     }
 }
 
-// Función para cargar y pintar la tabla de los últimos pagos
-async function cargarUltimosPagos() {
+// 1. Función para cargar y filtrar los pagos según la fecha seleccionada en el calendario
+async function cargarPagosPorFecha() {
     try {
+        const fechaSeleccionada = document.getElementById('filtroFechaPago').value;
         const res = await fetch(`${API_URL}/payments`);
         if (!res.ok) return;
         const pagos = await res.json();
@@ -1054,8 +1059,14 @@ async function cargarUltimosPagos() {
         const contenedor = document.getElementById('listaUltimosPagos');
         if (!contenedor) return;
 
-        if (pagos.length === 0) {
-            contenedor.innerHTML = '<p class="text-muted">No hay pagos registrados aún.</p>';
+        // Filtramos los pagos que coincidan exactamente con la fecha del calendario
+        const pagosFiltrados = pagos.filter(p => {
+            const fechaPagoStr = new Date(p.fechaPago).toISOString().split('T')[0];
+            return fechaPagoStr === fechaSeleccionada;
+        });
+
+        if (pagosFiltrados.length === 0) {
+            contenedor.innerHTML = `<p class="text-muted mb-0">No hay pagos registrados para la fecha ${fechaSeleccionada}.</p>`;
             return;
         }
 
@@ -1064,23 +1075,26 @@ async function cargarUltimosPagos() {
                 <table class="table table-dark table-sm mb-0">
                     <thead>
                         <tr>
+                            <th>Cliente</th>
                             <th>Monto</th>
                             <th>Método</th>
-                            <th>Fecha</th>
+                            <th>Hora</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody>
         `;
 
-        // Muestra los últimos 5 pagos registrados ordenados del más reciente al más antiguo
-        pagos.slice(-5).reverse().forEach(p => {
-            const fechaFormateada = new Date(p.fechaPago).toLocaleDateString();
+        pagosFiltrados.reverse().forEach(p => {
+            const nombreCliente = p.prestamoId?.clienteId?.nombre || p.prestamoId?.nombreCliente || 'Cliente';
+            const horaFormateada = new Date(p.fechaPago).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
             html += `
                 <tr>
+                    <td><strong>${nombreCliente}</strong></td>
                     <td>$${(p.montoPago ?? 0).toLocaleString()}</td>
                     <td>${p.metodoPago ?? 'EFECTIVO'}</td>
-                    <td>${fechaFormateada}</td>
+                    <td>${horaFormateada}</td>
                     <td>
                         <button class="btn btn-danger btn-sm" onclick="eliminarPago('${p._id}')">Reversar</button>
                     </td>
@@ -1091,9 +1105,39 @@ async function cargarUltimosPagos() {
         html += `</tbody></table></div>`;
         contenedor.innerHTML = html;
     } catch (err) {
-        console.error('Error al cargar la lista de pagos:', err);
+        console.error('Error al filtrar pagos por fecha:', err);
     }
 }
+
+// 2. Función para enviar la petición de eliminación al backend
+async function eliminarPago(pagoId) {
+    if (!confirm('¿Estás seguro de que deseas eliminar y reversar este pago? El dinero volverá al saldo pendiente del préstamo.')) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/payments/${pagoId}`, {
+            method: 'DELETE'
+        });
+        
+        if (res.ok) {
+            alert('✅ Pago reversado con éxito.');
+            location.reload(); // Recarga la página para actualizar las estadísticas y saldos
+        } else {
+            alert('⚠️ Error al intentar eliminar el pago.');
+        }
+    } catch (err) {
+        console.error('Error de red:', err);
+    }
+}
+
+// 3. Al abrir la página, ponemos la fecha de hoy por defecto en el calendario y cargamos los pagos del día
+window.addEventListener('DOMContentLoaded', () => {
+    const inputFecha = document.getElementById('filtroFechaPago');
+    if (inputFecha) {
+        const hoy = new Date().toISOString().split('T')[0];
+        inputFecha.value = hoy;
+    }
+    cargarPagosPorFecha();
+});
 
 // Función para enviar la petición de eliminación al backend
 async function eliminarPago(pagoId) {
