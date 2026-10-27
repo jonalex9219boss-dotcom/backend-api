@@ -500,14 +500,14 @@
         async function cargarEstadisticas() {
             try {
                 const res = await fetch(`${API_URL}/stats`);
-                const s = await res.json();
+                const s = await res.json().catch(() => ({}));
 
-                document.getElementById('statCaja').innerText = `$${s.cajaDisponible.toLocaleString()}`;
-                document.getElementById('statGastos').innerText = `$${s.totalGastosBancarios.toLocaleString()}`;
-                document.getElementById('statCalle').innerText = `$${s.totalSaldoPendiente.toLocaleString()}`;
-                document.getElementById('statPrestado').innerText = `$${s.totalPrestado.toLocaleString()}`;
-                document.getElementById('statRecaudado').innerText = `$${s.totalRecaudadoAbonos.toLocaleString()}`;
-                document.getElementById('cajaInicialInput').value = s.cajaInicial || '';
+document.getElementById('statCaja').innerText = `$$${(s.cajaDisponible ?? 0).toLocaleString()}`;
+document.getElementById('statGastos').innerText = `$$${(s.totalGastosBancarios ?? 0).toLocaleString()}`;
+document.getElementById('statCalle').innerText = `$$${(s.totalSaldoPendiente ?? 0).toLocaleString()}`;
+document.getElementById('statPrestado').innerText = `$$${(s.totalPrestado ?? 0).toLocaleString()}`;
+document.getElementById('statRecaudado').innerText = `$$${(s.totalRecaudadoAbonos ?? 0).toLocaleString()}`;
+document.getElementById('cajaInicialInput').value = s.cajaInicial ?? '';
             } catch (err) {
                 console.error('Error al cargar estadísticas:', err);
             }
