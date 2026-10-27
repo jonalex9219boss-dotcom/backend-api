@@ -525,27 +525,55 @@ document.getElementById('cajaInicialInput').value = s.cajaInicial ?? '';
             }
         }
 
-        async function fijarCajaInicial() {
-    const monto = document.getElementById('cajaInicialInput').value;
-    const origen = document.getElementById('origenCaja').value; // <--- Capturamos si es propio o del banco
+        // Función para cargar el valor guardado en MongoDB al abrir la página
+async function cargarCajaInicial() {
+    try {
+        const res = await fetch(`${API_URL}/caja`);
+        if (res.ok) {
+            const data = await res.json();
+            const inputCaja = document.getElementById('inputInyeccionCaja'); // Asegúrate que este sea el ID de tu cajita en el HTML
+            if (inputCaja && data.montoInicial) {
+                inputCaja.value = data.montoInicial;
+            }
+        }
+    } catch (err) {
+        console.error('Error al cargar la caja desde la BD:', err);
+    }
+}
+
+// Función para fijar la inyección y guardarla para siempre en MongoDB
+async function fijarCajaInicial() {
+    const monto = document.getElementById('inputInyeccionCaja').value;
+    const origenSelect = document.getElementById('selectOrigenCaja'); // El selector de Propio / Banco
+    const origen = origenSelect ? origenSelect.value : 'propio';
 
     if (!monto) {
-        alert('⚠️ Ingrese un monto válido para la inyección');
+        alert('⚠️ Ingresa un monto válido para la inyección.');
         return;
     }
 
-    const res = await fetch(`${API_URL}/caja-inicial`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ monto: Number(monto), origen }) // <--- Lo enviamos al backend
-    });
+    try {
+        const res = await fetch(`${API_URL}/caja`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ montoInicial: Number(monto), origen })
+        });
 
-    if (res.ok) {
-        alert('✅ Inyección de capital registrada correctamente');
-        document.getElementById('cajaInicialInput').value = '';
-        cargarTodo();
+        if (res.ok) {
+            alert('✅ ¡Inyección de capital guardada permanentemente en la base de datos!');
+            cargarTodo(); // Recarga tus datos generales
+        } else {
+            alert('⚠️ Error al guardar en la base de datos.');
+        }
+    } catch (err) {
+        console.error('Error de red:', err);
     }
 }
+
+// Ejecutar al cargar la página
+window.addEventListener('DOMContentLoaded', () => {
+    cargarCajaInicial();
+});
 
         async function registrarCliente() {
             try {

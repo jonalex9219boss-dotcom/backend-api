@@ -34,6 +34,7 @@ const Expense = mongoose.model('Expense', ExpenseSchema);
 app.use('/api/clients', clientRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/caja', require('./routes/cajaRoutes'));
 
 let cajaInicialPropia = 0;
 let cajaInicialBanco = 0;
