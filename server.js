@@ -46,30 +46,29 @@ app.get('/api/stats', async (req, res) => {
         const prestamos = await Loan.find();
         const pagos = await Payment.find();
         const gastos = await Expense.find();
-        
+
         // 1. Buscamos todas las inyecciones guardadas en el historial
-    const inyecciones = await CajaConfig.find({});
+        const inyecciones = await CajaConfig.find({});
 
-    // 2. Sumamos por separado las de origen propio y las del banco
-    const cajainicialPropia = inyecciones
-        .filter(i => i.origen === 'propio')
-        .reduce((acc, curr) => acc + curr.montoInicial, 0);
+        // 2. Sumamos por separado las de origen propio y las del banco
+        const cajainicialPropia = inyecciones
+            .filter(i => i.origen === 'propio')
+            .reduce((acc, curr) => acc + curr.montoInicial, 0);
 
-    const cajainicialBanco = inyecciones
-        .filter(i => i.origen === 'banco')
-        .reduce((acc, curr) => acc + curr.montoInicial, 0);
+        const cajainicialBanco = inyecciones
+            .filter(i => i.origen === 'banco')
+            .reduce((acc, curr) => acc + curr.montoInicial, 0);
 
-    // 3. Total unificado de dinero inyectado al negocio
-    const totalInyectado = cajainicialPropia + cajainicialBanco;
+        const totalInyectado = cajainicialPropia + cajainicialBanco;
 
         let totalPrestado = 0;
         let totalSaldoPendiente = 0;
-        let totalMontoConInteres = 0;
+        let totalMontoConIntereses = 0;
 
         prestamos.forEach(p => {
             totalPrestado += p.montoPrestado || 0;
             totalSaldoPendiente += p.saldoPendiente || 0;
-            totalMontoConInteres += p.montoTotal || 0;
+            totalMontoConIntereses += p.montoTotal || 0;
         });
 
         let totalRecaudoAbonos = 0;
@@ -79,34 +78,31 @@ app.get('/api/stats', async (req, res) => {
 
         let totalGastosBancarios = 0;
         let totalGastosPropios = 0;
-        
         gastos.forEach(g => {
-            if (g.origen === 'banco') {
-                totalGastosBancarios += g.monto || 0;
-            } else {
-                totalGastosPropios += g.monto || 0;
-            }
+            if (g.categoria === 'banco') totalGastosBancarios += g.monto || 0;
+            if (g.categoria === 'propio') totalGastosPropios += g.monto || 0;
         });
 
-        const totalInteresesProyectados = totalMontoConInteres - totalPrestado;
+        const totalInteresesProyectados = totalMontoConIntereses - totalPrestado;
 
-        // Usamos los totales calculados de las inyecciones múltiples
-    const cajaTotalInicial = totalInyectado;
-    const cajaDisponible = cajaTotalInicial + totalRecaudoAbonos - totalPrestado - totalGastosBancarios - totalGastosPropios;
+        // Usamos el total inyectado correctamente
+        const cajaTotalInicial = totalInyectado;
+        const cajaDisponible = cajaTotalInicial + totalRecaudoAbonos - totalPrestado - totalGastosBancarios - totalGastosPropios;
 
-    res.json({
-        cajainicial: cajaTotalInicial,
-        cajainicialPropia: cajainicialPropia,
-        cajainicialBanco: cajainicialBanco,
-        cajDisponible,
-        totalPrestado,
-        totalSaldoPendiente,
-        totalRecaudoAbonos,
-        totalGastosBancarios,
-        totalGastosPropios,
-        totalInteresesProyectados,
-        prestamosActivos: prestamos.filter(p => p.saldoPendiente > 0).length
-    });
+        res.json({
+            cajainicial: cajaTotalInicial,
+            cajainicialPropia: cajainicialPropia,
+            cajainicialBanco: cajainicialBanco,
+            cajaDisponible,
+            totalPrestado,
+            totalSaldoPendiente,
+            totalRecaudoAbonos,
+            totalGastosBancarios,
+            totalGastosPropios,
+            totalInteresesProyectados,
+            prestamosActivos: prestamos.filter(p => p.saldoPendiente > 0).length
+        });
+
     } catch (err) {
         res.status(500).json({ mensaje: err.message });
     }
