@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
-const cajaConfigSchema = new mongoose.Schema({
-    tipo: { type: String, required: true, unique: true }, // Ej: 'global'
-    montoInicial: { type: Number, required: true, default: 0 },
-    origen: { type: String, default: 'propio' } // 'propio' o 'banco'
-}, { timestamps: true });
+const CajaConfigSchema = new mongoose.Schema({
+    montoInicial: { type: Number, required: true },
+    origen: { type: String, enum: ['propio', 'banco'], default: 'propio' },
+    fecha: { type: Date, default: Date.now }
+});
 
-module.exports = mongoose.model('CajaConfig', cajaConfigSchema);
+module.exports = mongoose.model('CajaConfig', CajaConfigSchema);

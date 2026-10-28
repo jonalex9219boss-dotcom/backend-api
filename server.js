@@ -41,17 +41,26 @@ let cajaInicialPropia = 0;
 let cajaInicialBanco = 0;
 
 // Obtener estadísticas globales
-// Obtener estadísticas globales
 app.get('/api/stats', async (req, res) => {
     try {
         const prestamos = await Loan.find();
         const pagos = await Payment.find();
         const gastos = await Expense.find();
         
-        // Buscamos la configuración de la caja guardada en MongoDB de forma permanente
-        let cajaConfig = await CajaConfig.findOne({ tipo: 'global' });
-        const montoInyeccionBD = cajaConfig ? cajaConfig.montoInicial : 0;
-        const origenBD = cajaConfig ? cajaConfig.origen : 'propio';
+        // 1. Buscamos todas las inyecciones guardadas en el historial
+    const inyecciones = await CajaConfig.find({});
+
+    // 2. Sumamos por separado las de origen propio y las del banco
+    const cajainicialPropia = inyecciones
+        .filter(i => i.origen === 'propio')
+        .reduce((acc, curr) => acc + curr.montoInicial, 0);
+
+    const cajainicialBanco = inyecciones
+        .filter(i => i.origen === 'banco')
+        .reduce((acc, curr) => acc + curr.montoInicial, 0);
+
+    // 3. Total unificado de dinero inyectado al negocio
+    const totalInyectado = cajainicialPropia + cajainicialBanco;
 
         let totalPrestado = 0;
         let totalSaldoPendiente = 0;
@@ -81,23 +90,23 @@ app.get('/api/stats', async (req, res) => {
 
         const totalInteresesProyectados = totalMontoConInteres - totalPrestado;
 
-        // Usamos el valor real que viene directo de la base de datos
-        const cajaTotalInicial = montoInyeccionBD;
-        const cajaDisponible = cajaTotalInicial + totalRecaudoAbonos - totalPrestado - totalGastosBancarios - totalGastosPropios;
+        // Usamos los totales calculados de las inyecciones múltiples
+    const cajaTotalInicial = totalInyectado;
+    const cajaDisponible = cajaTotalInicial + totalRecaudoAbonos - totalPrestado - totalGastosBancarios - totalGastosPropios;
 
-        res.json({
-            cajainicial: cajaTotalInicial,
-            cajainicialPropia: origenBD === 'propio' ? montoInyeccionBD : 0,
-            cajainicialBanco: origenBD === 'banco' ? montoInyeccionBD : 0,
-            cajaDisponible,
-            totalPrestado,
-            totalSaldoPendiente,
-            totalRecaudoAbonos,
-            totalGastosBancarios,
-            totalGastosPropios,
-            totalInteresesProyectados,
-            prestamosActivos: prestamos.filter(p => p.saldoPendiente > 0).length
-        });
+    res.json({
+        cajainicial: cajaTotalInicial,
+        cajainicialPropia: cajainicialPropia,
+        cajainicialBanco: cajainicialBanco,
+        cajDisponible,
+        totalPrestado,
+        totalSaldoPendiente,
+        totalRecaudoAbonos,
+        totalGastosBancarios,
+        totalGastosPropios,
+        totalInteresesProyectados,
+        prestamosActivos: prestamos.filter(p => p.saldoPendiente > 0).length
+    });
     } catch (err) {
         res.status(500).json({ mensaje: err.message });
     }

@@ -1,38 +1,59 @@
 const express = require('express');
 const router = express.Router();
-const CajaConfig = require('../models/CajaConfig');
+const CajaConfig = require('./models/CajaConfig'); // Ajusta la ruta del modelo si es necesario
 
-// Obtener la configuración actual de la caja
+// 1. Obtener el historial de todas las inyecciones
 router.get('/', async (req, res) => {
     try {
-        let config = await CajaConfig.findOne({ tipo: 'global' });
-        if (!config) {
-            config = new CajaConfig({ tipo: 'global', montoInicial: 0, origen: 'propio' });
-            await config.save();
-        }
-        res.json(config);
+        const inyecciones = await CajaConfig.find().sort({ fecha: -1 });
+        res.json(inyecciones);
     } catch (err) {
-        res.status(500).json({ error: 'Error al obtener la caja' });
+        res.status(500).json({ error: 'Error al obtener el historial de inyecciones' });
     }
 });
 
-// Actualizar o fijar la inyección de capital de forma permanente
+// 2. Registrar una nueva inyección (Se acumula en el sistema)
 router.post('/', async (req, res) => {
     try {
         const { montoInicial, origen } = req.body;
-        let config = await CajaConfig.findOne({ tipo: 'global' });
         
-        if (!config) {
-            config = new CajaConfig({ tipo: 'global', montoInicial, origen });
-        } else {
-            config.montoInicial = montoInicial;
-            config.origen = origen || 'propio';
-        }
-        
-        await config.save();
-        res.json({ message: 'Caja actualizada y guardada permanentemente', config });
+        const nuevaInyeccion = new CajaConfig({
+            montoInicial: Number(montoInicial) || 0,
+            origen: origen || 'propio'
+        });
+
+        await nuevaInyeccion.save();
+        res.json({ message: 'Inyección registrada y acumulada con éxito', nuevaInyeccion });
     } catch (err) {
-        res.status(500).json({ error: 'Error al guardar la caja' });
+        res.status(500).json({ error: 'Error al registrar la inyección' });
+    }
+});
+
+// 3. Editar una inyección existente por su ID (Corrección de errores humanos)
+router.put('/:id', async (req, res) => {
+    try {
+        const { montoInicial, origen } = req.body;
+        const inyeccionActualizada = await CajaConfig.findByIdAndUpdate(
+            req.params.id,
+            { 
+                montoInicial: Number(montoInicial) || 0, 
+                origen: origen || 'propio' 
+            },
+            { new: true }
+        );
+        res.json({ message: 'Inyección actualizada correctamente', inyeccionActualizada });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al actualizar la inyección' });
+    }
+});
+
+// 4. Eliminar / Revertir una inyección por su ID
+router.delete('/:id', async (req, res) => {
+    try {
+        await CajaConfig.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Inyección eliminada / revertida con éxito' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al eliminar la inyección' });
     }
 });
 
