@@ -79,9 +79,15 @@ app.get('/api/stats', async (req, res) => {
         let totalGastosBancarios = 0;
         let totalGastosPropios = 0;
         gastos.forEach(g => {
-            if (g.categoria === 'banco') totalGastosBancarios += g.monto || 0;
-            if (g.categoria === 'propio') totalGastosPropios += g.monto || 0;
-        });
+    const cat = (g.categoria || '').toLowerCase();
+    const montoG = Number(g.monto || 0);
+    
+    if (cat.includes('banco') || cat.includes('externo')) {
+        totalGastosBancarios += montoG;
+    } else {
+        totalGastosPropios += montoG;
+    }
+});
 
         const totalInteresesProyectados = totalMontoConIntereses - totalPrestado;
 
