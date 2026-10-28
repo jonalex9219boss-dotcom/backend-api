@@ -360,18 +360,40 @@
                     <option value="Daviplata">Daviplata</option>
                 </select>
                 <button onclick="registrarPago()">Registrar Abono</button>
-
-                <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
-                <small style="color: #aaa;">Inyección de Capital / Caja Inicial ($):</small>
-                <input type="number" id="inputInyeccionCaja" placeholder="Ej: 5000000" style="margin: 5px 0; width: 100%;">
-
-<select id="selectOrigenCajargin: 5px 0; width: 100%; padding: 8px;">
-    <option value="propio">Capital Propio</option>
-    <option value="banco">Préstamo Bancario / Externo</option>
-</select>
-
-<button style="width: 100%; padding: 8px; margin-top: 5px;" onclick="fijarCajaInicial()">Fijar Inyección</button>
             </div>
+
+            <!-- NUEVA TARJETA 5: GESTIÓN DE CAJA E HISTORIAL DE INYECCIONES -->
+<div class="card">
+    <h3>5. Gestión de Caja y Capital Inicial</h3>
+    <small style="color: #aaa;">Inyección de Capital / Caja Inicial ($):</small>
+    <input type="number" id="inputInyeccionCaja" placeholder="Ej: 5000000" style="margin: 5px 0; width: 100%;">
+    
+    <select id="selectOrigenCajargin" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+        <option value="propio">Capital Propio</option>
+        <option value="banco">Préstamo Bancario / Externo</option>
+    </select>
+    
+    <button style="width: 100%; padding: 8px; margin-top: 5px;" onclick="fijarCajaInicial()">Fijar Inyección</button>
+
+    <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+    
+    <h4 style="color: #fff; margin-bottom: 10px;">📋 Historial de Inyecciones</h4>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; color: #fff; text-align: left; border-collapse: collapse; font-size: 13px;">
+            <thead>
+                <tr style="border-bottom: 1px solid #444; color: #aaa;">
+                    <th style="padding: 6px;">Fecha</th>
+                    <th style="padding: 6px;">Origen</th>
+                    <th style="padding: 6px;">Monto</th>
+                    <th style="padding: 6px; text-align: center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaHistorialInyecciones">
+                <!-- Aquí se cargará el historial dinámicamente -->
+            </tbody>
+        </table>
+    </div>
+</div>
 
             <div class="card">
                 <h3>4. Registrar Pago a Banco / Gastos</h3>
@@ -529,6 +551,7 @@
             cargarPrestamos();
             cargarEstadisticas();
             cargarGastos();
+            cargarHistorialInyecciones();
         }
 
         async function cargarEstadisticas() {
@@ -566,16 +589,13 @@ async function cargarCajaInicial() {
     }
 }
 
-// Función para fijar la inyección y guardarla para siempre en MongoDB
 async function fijarCajaInicial() {
     const monto = document.getElementById('inputInyeccionCaja').value;
-    
-    // Aquí usamos el ID exacto que tienes en tu HTML con su "argin"
     const origenSelect = document.getElementById('selectOrigenCajargin'); 
-    const origen = origenSelect ? origenSelect.value : 'propio';
+    const origen = origenSelect ? origenSelect.value : 'propio'; // Lee si es 'propio' o 'banco'
 
     if (!monto) {
-        alert('Ingresa un monto válido para la inyección.');
+        alert('Ingresa un monto válido.');
         return;
     }
 
@@ -587,17 +607,93 @@ async function fijarCajaInicial() {
         });
         
         if (res.ok) {
-            alert('¡Caja actualizada con éxito!');
-            cargarEstadisticas(); // Recarga las tarjetas para ver el cambio de inmediato
+            alert('¡Inyección registrada con éxito!');
+            document.getElementById('inputInyeccionCaja').value = '';
+            cargarEstadisticas();
+            cargarHistorialInyecciones(); // Función para refrescar la tablita que ya viene
         }
     } catch (err) {
-        console.error('Error al fijar la caja:', err);
+        console.error('Error al registrar inyección:', err);
     }
 }
 
+async function cargarHistorialInyecciones() {
+    try {
+        const res = await fetch(`${API_URL}/caja`);
+        const inyecciones = await res.json();
+        const tbody = document.getElementById('tablaHistorialInyecciones');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        inyecciones.forEach(i => {
+            const fechaFmt = new Date(i.fecha).toLocaleDateString();
+            const origenTexto = i.origen === 'banco' ? '🏦 Banco' : '👤 Propio';
+            
+            tbody.innerHTML += `
+                <tr style="border-bottom: 1px solid #222;">
+                    <td style="padding: 8px;">${fechaFmt}</td>
+                    <td style="padding: 8px;">${origenTexto}</td>
+                    <td style="padding: 8px;">$${Number(i.montoInicial).toLocaleString()}</td>
+                    <td style="padding: 8px; text-align: center;">
+                        <button onclick="editarInyeccion('${i._id}', ${i.montoInicial}, '${i.origen}')" style="background: #f39c12; border:none; padding: 4px 8px; color:#fff; border-radius:4px; cursor:pointer; margin-right:5px;">✏️</button>
+                        <button onclick="eliminarInyeccion('${i._id}')" style="background: #e74c3c; border:none; padding: 4px 8px; color:#fff; border-radius:4px; cursor:pointer;">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (err) {
+        console.error('Error cargando historial:', err);
+    }
+}
+
+async function editarInyeccion(id, montoActual, origenActual) {
+    const nuevoMonto = prompt('Modifica el monto de la inyección:', montoActual);
+    if (nuevoMonto === null) return;
+
+    const nuevoOrigen = prompt('Modifica el origen (escribe "propio" o "banco"):', origenActual);
+    if (!nuevoOrigen || (nuevoOrigen !== 'propio' && nuevoOrigen !== 'banco')) {
+        alert('Origen inválido. Debe ser "propio" o "banco".');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/caja/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ montoInicial: Number(nuevoMonto), origen: nuevoOrigen })
+        });
+
+        if (res.ok) {
+            alert('¡Inyección actualizada con éxito!');
+            cargarEstadisticas();
+            cargarHistorialInyecciones();
+        }
+    } catch (err) {
+        console.error('Error al editar:', err);
+    }
+}
+
+async function eliminarInyeccion(id) {
+    if (!confirm('¿Estás seguro de eliminar / revertir esta inyección?')) return;
+
+    try {
+        const res = await fetch(`${API_URL}/caja/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok) {
+            alert('Inyección eliminada correctamente.');
+            cargarEstadisticas();
+            cargarHistorialInyecciones();
+        }
+    } catch (err) {
+        console.error('Error al eliminar:', err);
+    }
+}
 // Ejecutar al cargar la página
 window.addEventListener('DOMContentLoaded', () => {
     cargarCajaInicial();
+    cargarHistorialInyecciones(); // <--- Agrégala aquí
 });
 
         async function registrarCliente() {
