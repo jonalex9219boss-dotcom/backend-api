@@ -6,6 +6,7 @@ require('dotenv').config();
 const clientRoutes = require('./routes/clientRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const CajaConfig = require('./models/CajaConfig');
 
 const Client = require('./models/Client');
 const Loan = require('./models/Loan');
