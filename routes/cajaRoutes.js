@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const CajaConfig = require('./models/CajaConfig'); // Ajusta la ruta del modelo si es necesario
+const CajaConfig = require('../models/CajaConfig'); // ✅ Correcto, sube a la raíz y entra a models
 
 // 1. Obtener el historial de todas las inyecciones
 router.get('/', async (req, res) => {
