@@ -40,11 +40,17 @@ let cajaInicialPropia = 0;
 let cajaInicialBanco = 0;
 
 // Obtener estadísticas globales
+// Obtener estadísticas globales
 app.get('/api/stats', async (req, res) => {
     try {
         const prestamos = await Loan.find();
         const pagos = await Payment.find();
         const gastos = await Expense.find();
+        
+        // Buscamos la configuración de la caja guardada en MongoDB de forma permanente
+        let cajaConfig = await CajaConfig.findOne({ tipo: 'global' });
+        const montoInyeccionBD = cajaConfig ? cajaConfig.montoInicial : 0;
+        const origenBD = cajaConfig ? cajaConfig.origen : 'propio';
 
         let totalPrestado = 0;
         let totalSaldoPendiente = 0;
@@ -63,7 +69,7 @@ app.get('/api/stats', async (req, res) => {
 
         let totalGastosBancarios = 0;
         let totalGastosPropios = 0;
-
+        
         gastos.forEach(g => {
             if (g.origen === 'banco') {
                 totalGastosBancarios += g.monto || 0;
@@ -73,15 +79,15 @@ app.get('/api/stats', async (req, res) => {
         });
 
         const totalInteresesProyectados = totalMontoConInteres - totalPrestado;
-        
-        // Sumamos ambas fuentes de inyección de capital
-        const cajaTotalInicial = cajaInicialPropia + cajaInicialBanco;
+
+        // Usamos el valor real que viene directo de la base de datos
+        const cajaTotalInicial = montoInyeccionBD;
         const cajaDisponible = cajaTotalInicial + totalRecaudoAbonos - totalPrestado - totalGastosBancarios - totalGastosPropios;
 
         res.json({
-            cajaInicial: cajaTotalInicial,
-            cajaInicialPropia,
-            cajaInicialBanco,
+            cajainicial: cajaTotalInicial,
+            cajainicialPropia: origenBD === 'propio' ? montoInyeccionBD : 0,
+            cajainicialBanco: origenBD === 'banco' ? montoInyeccionBD : 0,
             cajaDisponible,
             totalPrestado,
             totalSaldoPendiente,
@@ -93,24 +99,6 @@ app.get('/api/stats', async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ mensaje: err.message });
-    }
-});
-
-// Ruta para Registrar la Inyección de Capital separando el origen
-app.post('/api/caja-inicial', (req, res) => {
-    try {
-        const { monto, origen } = req.body;
-        const valor = Number(monto) || 0;
-
-        if (origen === 'propio') {
-            cajaInicialPropia += valor;
-        } else {
-            cajaInicialBanco += valor;
-        }
-
-        res.json({ success: true, mensaje: 'Inyección registrada y diferenciada', cajaInicialPropia, cajaInicialBanco });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
     }
 });
 
