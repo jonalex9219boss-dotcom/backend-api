@@ -67,13 +67,31 @@
         }
 
         .stat-card {
-            background: #181818;
-            border: 1px solid #333;
-            border-left: 4px solid var(--gold);
-            border-radius: 8px;
-            padding: 15px 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
+    background: #181818;
+    border: 1px solid #333;
+    border-left: 4px solid var(--gold);
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(212, 175, 55, 0.05);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 6px 25px rgba(212, 175, 55, 0.2);
+}
+
+/* Estilo elegante para el desglose del capital dentro de la tarjeta */
+.caja-desglose {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.15);
+    font-size: 0.78rem;
+    color: var(--text-light);
+    display: flex;
+    justify-content: space-between;
+    opacity: 0.85;
+}
 
         .stat-card h4 {
             margin: 0 0 8px 0;
@@ -259,9 +277,13 @@
 
         <div class="stats-grid">
             <div class="stat-card green">
-                <h4>💵 Caja Disponible (Líquido)</h4>
-                <div class="val" id="statCaja">$0</div>
-            </div>
+    <h4>Caja Disponible (Líquido)</h4>
+    <div class="val" id="statCaja">$$0</div>
+    <div class="caja-desglose">
+        <span>Propio: <strong id="statPropio">$0</strong></span>
+        <span>Banco: <strong id="statBanco">$0</strong></span>
+    </div>
+</div>
             <div class="stat-card red">
                 <h4>🏦 Pagos / Cuotas Bancos</h4>
                 <div class="val" id="statGastos">$0</div>
@@ -515,6 +537,9 @@
                 const s = await res.json().catch(() => ({}));
 
 document.getElementById('statCaja').innerText = `$$${(s.cajaDisponible ?? 0).toLocaleString()}`;
+document.getElementById('statPropio').innerText = `$${(s.cajainicialPropia ?? 0).toLocaleString()}`;
+document.getElementById('statBanco').innerText = `$${(s.cajainicialBanco ?? 0).toLocaleString()}`;
+
 document.getElementById('statGastos').innerText = `$$${(s.totalGastosBancarios ?? 0).toLocaleString()}`;
 document.getElementById('statCalle').innerText = `$$${(s.totalSaldoPendiente ?? 0).toLocaleString()}`;
 document.getElementById('statPrestado').innerText = `$$${(s.totalPrestado ?? 0).toLocaleString()}`;
