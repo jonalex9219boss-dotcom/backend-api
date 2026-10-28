@@ -569,11 +569,13 @@ async function cargarCajaInicial() {
 // Función para fijar la inyección y guardarla para siempre en MongoDB
 async function fijarCajaInicial() {
     const monto = document.getElementById('inputInyeccionCaja').value;
-    const origenSelect = document.getElementById('selectOrigenCaja'); // El selector de Propio / Banco
+    
+    // Aquí usamos el ID exacto que tienes en tu HTML con su "argin"
+    const origenSelect = document.getElementById('selectOrigenCajargin'); 
     const origen = origenSelect ? origenSelect.value : 'propio';
 
     if (!monto) {
-        alert('⚠️ Ingresa un monto válido para la inyección.');
+        alert('Ingresa un monto válido para la inyección.');
         return;
     }
 
@@ -581,17 +583,15 @@ async function fijarCajaInicial() {
         const res = await fetch(`${API_URL}/caja`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ montoInicial: Number(monto), origen })
+            body: JSON.stringify({ montoInicial: Number(monto), origen: origen })
         });
-
+        
         if (res.ok) {
-            alert('✅ ¡Inyección de capital guardada permanentemente en la base de datos!');
-            cargarTodo(); // Recarga tus datos generales
-        } else {
-            alert('⚠️ Error al guardar en la base de datos.');
+            alert('¡Caja actualizada con éxito!');
+            cargarEstadisticas(); // Recarga las tarjetas para ver el cambio de inmediato
         }
     } catch (err) {
-        console.error('Error de red:', err);
+        console.error('Error al fijar la caja:', err);
     }
 }
 
