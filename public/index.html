@@ -362,7 +362,21 @@
                 <button onclick="registrarPago()">Registrar Abono</button>
             </div>
 
-            <!-- NUEVA TARJETA 5: GESTIÓN DE CAJA E HISTORIAL DE INYECCIONES -->
+            <div class="card">
+                <h3>4. Registrar Pago a Banco / Gastos</h3>
+                <input type="text" id="descGasto" placeholder="Ej: Cuota Banco Davivienda">
+                <input type="number" id="montoGasto" placeholder="Monto Pagado ($)">
+                <select id="catGasto">
+    <option value="Cuota Banco">Cuota Banco / Préstamo Externo</option>
+    <option value="Capital Propio">Capital Propio</option>
+    <option value="Gasto Operativo">Gasto Operativo / Papelería</option>
+    <option value="Otro Egreso">Otro Egreso</option>
+</select>
+                <button style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;" onclick="registrarGasto()">Registrar Egreso</button>
+            </div>
+        </div>
+
+        <!-- NUEVA TARJETA 5: GESTIÓN DE CAJA E HISTORIAL DE INYECCIONES -->
 <div class="card">
     <h3>5. Gestión de Caja y Capital Inicial</h3>
     <small style="color: #aaa;">Inyección de Capital / Caja Inicial ($):</small>
@@ -377,37 +391,25 @@
 
     <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
     
-    <h4 style="color: #fff; margin-bottom: 10px;">📋 Historial de Inyecciones</h4>
+    <!-- NUEVO PANEL INDEPENDIENTE PARA EL HISTORIAL DE INYECCIONES -->
+<div class="card">
+    <h3 style="color: #f39c12; margin-bottom: 15px;">📋 Historial Detallado de Inyecciones</h3>
     <div style="overflow-x: auto;">
-        <table style="width: 100%; color: #fff; text-align: left; border-collapse: collapse; font-size: 13px;">
+        <table style="width: 100%; color: #fff; text-align: left; border-collapse: collapse; font-size: 14px;">
             <thead>
-                <tr style="border-bottom: 1px solid #444; color: #aaa;">
-                    <th style="padding: 6px;">Fecha</th>
-                    <th style="padding: 6px;">Origen</th>
-                    <th style="padding: 6px;">Monto</th>
-                    <th style="padding: 6px; text-align: center;">Acciones</th>
+                <tr style="border-bottom: 2px solid #555; color: #aaa;">
+                    <th style="padding: 8px;">Fecha</th>
+                    <th style="padding: 8px;">Origen</th>
+                    <th style="padding: 8px;">Monto</th>
+                    <th style="padding: 8px; text-align: center;">Acciones</th>
                 </tr>
             </thead>
             <tbody id="tablaHistorialInyecciones">
-                <!-- Aquí se cargará el historial dinámicamente -->
+                <!-- Se carga dinámicamente -->
             </tbody>
         </table>
     </div>
 </div>
-
-            <div class="card">
-                <h3>4. Registrar Pago a Banco / Gastos</h3>
-                <input type="text" id="descGasto" placeholder="Ej: Cuota Banco Davivienda">
-                <input type="number" id="montoGasto" placeholder="Monto Pagado ($)">
-                <select id="catGasto">
-    <option value="Cuota Banco">Cuota Banco / Préstamo Externo</option>
-    <option value="Capital Propio">Capital Propio</option>
-    <option value="Gasto Operativo">Gasto Operativo / Papelería</option>
-    <option value="Otro Egreso">Otro Egreso</option>
-</select>
-                <button style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;" onclick="registrarGasto()">Registrar Egreso</button>
-            </div>
-        </div>
 
         <!-- Tarjeta independiente para el Historial y Reversión por Fecha -->
 <div class="card mt-4 p-4 bg-dark rounded text-white">
