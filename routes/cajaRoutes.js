@@ -12,19 +12,21 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 2. Registrar una nueva inyección (Se acumula en el sistema)
+// 2. Registrar una nueva inyección (Soporta capital propio y banco)
 router.post('/', async (req, res) => {
     try {
         const { montoInicial, origen } = req.body;
-        
+
         const nuevaInyeccion = new CajaConfig({
             montoInicial: Number(montoInicial) || 0,
-            origen: origen || 'propio'
+            origen: origen || 'propio', // Recibe 'propio' o 'banco' según lo que mande el frontend
+            fecha: new Date()           // Asigna la fecha actual para que el .sort() no falle nunca
         });
 
         await nuevaInyeccion.save();
-        res.json({ message: 'Inyección registrada y acumulada con éxito', nuevaInyeccion });
+        res.json({ message: 'Inyección registrada con éxito', nuevaInyeccion });
     } catch (err) {
+        console.error("--> Error al registrar la inyección:", err);
         res.status(500).json({ error: 'Error al registrar la inyección' });
     }
 });
