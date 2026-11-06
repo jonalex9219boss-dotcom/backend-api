@@ -6,4 +6,4 @@ const CajaConfigSchema = new mongoose.Schema({
     fecha: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('CajaConfig', CajaConfigSchema);
+module.exports = mongoose.model('CajaConfig', CajaConfigSchema, 'cajaconfigs');
