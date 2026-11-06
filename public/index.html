@@ -557,23 +557,39 @@
         }
 
         async function cargarEstadisticas() {
-            try {
-                const res = await fetch(`${API_URL}/stats`);
-                const s = await res.json().catch(() => ({}));
+    try {
+        const res = await fetch(`${API_URL}/stats`);
+        if (!res.ok) throw new Error('Error al obtener estadísticas');
+        const s = await res.json();
 
-document.getElementById('statCaja').innerText = `$$${(s.cajaDisponible ?? 0).toLocaleString()}`;
-document.getElementById('statPropio').innerText = `$${(s.cajainicialPropia ?? 0).toLocaleString()}`;
-document.getElementById('statBanco').innerText = `$${(s.cajainicialBanco ?? 0).toLocaleString()}`;
-
-document.getElementById('statGastos').innerText = `$$${(s.totalGastosBancarios ?? 0).toLocaleString()}`;
-document.getElementById('statCalle').innerText = `$$${(s.totalSaldoPendiente ?? 0).toLocaleString()}`;
-document.getElementById('statPrestado').innerText = `$$${(s.totalPrestado ?? 0).toLocaleString()}`;
-document.getElementById('statRecaudado').innerText = `$$${(s.totalRecaudadoAbonos ?? 0).toLocaleString()}`;
-document.getElementById('inputInyeccionCaja').value = s.cajaInicial ?? '';
-            } catch (err) {
-                console.error('Error al cargar estadísticas:', err);
+        // Función auxiliar segura para actualizar el DOM sin rompernos si falta un ID
+        const setSafely = (id, value, isInput = false) => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (isInput) {
+                    el.value = value ?? '';
+                } else {
+                    el.innerText = `$${(value ?? 0).toLocaleString()}`;
+                }
             }
-        }
+        };
+
+        // Actualizamos cada métrica de manera limpia y blindada
+        setSafely('statCaja', s.cajaDisponible);
+        setSafely('statPropio', s.cajainicialPropia);
+        setSafely('statBanco', s.cajainicialBanco);
+        setSafely('statGastos', s.totalGastosBancarios);
+        setSafely('statCalle', s.totalSaldoPendiente);
+        setSafely('statPrestado', s.totalPrestado);
+        setSafely('statRecaudado', s.totalRecaudadoAbonos);
+        
+        // El input de inyección de caja
+        setSafely('inputInyeccionCaja', s.cajaInicial, true);
+
+    } catch (err) {
+        console.error('Error al cargar estadísticas:', err);
+    }
+}
 
         // Función para cargar el valor guardado en MongoDB al abrir la página
 async function cargarCajaInicial() {
