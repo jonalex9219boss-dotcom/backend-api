@@ -49,6 +49,8 @@ router.get('/', async (req, res) => {
     try {
         const prestamos = await Loan.find().populate('clienteId').lean();
 
+        console.log("Préstamos poblados desde el backend:, prestamos");
+
         // Contar los pagos para cada préstamo en tiempo real
 const prestamosConCuotas = await Promise.all(prestamos.map(async (prestamo) => {
     const cuotasPagadas = await Payment.countDocuments({ prestamoId: prestamo._id });
