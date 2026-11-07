@@ -7,4 +7,4 @@ const clientSchema = new mongoose.Schema({
     direccion: { type: String }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Client', clientSchema);
+module.exports = mongoose.model('Client', clientSchema, 'clientes');
