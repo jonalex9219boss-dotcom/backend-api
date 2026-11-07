@@ -60,4 +60,4 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-module.exports = mongoose.model('CajaConfig', CajaConfigSchema, 'cajaconfigs');
+module.exports = router;
