@@ -41,6 +41,11 @@ const loanSchema = new mongoose.Schema({
     fechaVencimiento: {
         type: Date
     }
-});
+}, {
+        timestamps: true,
+        collection: 'Préstamos'
+    
+
+}); 
 
 module.exports = mongoose.model('Loan', loanSchema, 'Préstamos');

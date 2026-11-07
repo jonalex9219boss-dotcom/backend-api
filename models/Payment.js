@@ -7,6 +7,8 @@ const paymentSchema = new mongoose.Schema({
     metodoPago: { type: String, enum: ['EFECTIVO', 'NEQUI', 'DAVIPLATA'], default: 'EFECTIVO' },
     fechaPago: { type: Date, default: Date.now },
     comentarios: { type: String, default: '' }
-}, { timestamps: true });
+}, { timestamps: true,
+    collection: 'Pagos'
+ });
 
 module.exports = mongoose.model('Payment', paymentSchema, 'Pagos');
