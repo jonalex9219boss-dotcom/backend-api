@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Loan = require('../models/Loan');
-const Payment = require('../models/Payment'); // <--- ¡Agrega esta línea aquí arriba!
+const Payment = require('../models/Payment');
+const Client = require('../models/Client');
 
 // Crear un nuevo préstamo
 router.post('/', async (req, res) => {
