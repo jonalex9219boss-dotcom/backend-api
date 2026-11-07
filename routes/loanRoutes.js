@@ -49,7 +49,7 @@ router.get('/', async (req, res) => {
         const prestamos = await Loan.find().populate('clienteId').lean();
 
         // Contar los pagos para cada préstamo en tiempo real
-const prestamosConCuotas = await Promise.all(prestanos.map(async (prestamo) => {
+const prestamosConCuotas = await Promise.all(prestamos.map(async (prestamo) => {
     const cuotasPagadas = await Payment.countDocuments({ prestamoId: prestamo._id });
     return {
         ...prestamo, // <--- Como usamos .lean(), se pasa directamente sin .toObject()
