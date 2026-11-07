@@ -9,4 +9,4 @@ const paymentSchema = new mongoose.Schema({
     comentarios: { type: String, default: '' }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Payment', paymentSchema);
+module.exports = mongoose.model('Payment', paymentSchema, 'Pagos');

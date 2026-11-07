@@ -43,4 +43,4 @@ const loanSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Loan', loanSchema, 'prestamos');
+module.exports = mongoose.model('Loan', loanSchema, 'Préstamos');
