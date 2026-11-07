@@ -1296,35 +1296,7 @@ async function eliminarPago(pagoId) {
     }
 }
 
-// 3. Al abrir la página, ponemos la fecha de hoy por defecto en el calendario y cargamos los pagos del día
-window.addEventListener('DOMContentLoaded', () => {
-    const inputFecha = document.getElementById('filtroFechaPago');
-    if (inputFecha) {
-        const hoy = new Date().toISOString().split('T')[0];
-        inputFecha.value = hoy;
-    }
-    cargarPagosPorFecha();
-});
 
-// Función para enviar la petición de eliminación al backend
-async function eliminarPago(pagoId) {
-    if (!confirm('¿Estás seguro de que deseas eliminar y reversar este pago? El dinero volverá al saldo pendiente del préstamo.')) return;
-    
-    try {
-        const res = await fetch(`${API_URL}/payments/${pagoId}`, {
-            method: 'DELETE'
-        });
-        
-        if (res.ok) {
-            alert('✅ Pago reversado con éxito.');
-            location.reload(); // Recarga la página para actualizar las estadísticas y saldos
-        } else {
-            alert('⚠️ Error al intentar eliminar el pago.');
-        }
-    } catch (err) {
-        console.error('Error de red:', err);
-    }
-}
 
 // Cargar la lista automáticamente al abrir la página
 window.addEventListener('DOMContentLoaded', () => {
