@@ -884,11 +884,9 @@ async function consultarCobrosMensuales() {
                 const hoy = new Date();
                 hoy.setHours(0,0,0,0);
                 
-
-                console.log("Datos que llegaron del servidor:", prestamos);
                 if (Array.isArray(prestamos)) {
             prestamos.forEach(p => {
-                if (!p || !p.clienteId) return; // Salta los registros vacíos
+                if (!p) return;
                         
                         const nombreCliente = (p.clienteId && p.clienteId.nombre) ? p.clienteId.nombre : 'Cliente Desconocido';
                         const esActivo = p.saldoPendiente > 0;
