@@ -31,7 +31,7 @@ const ExpenseSchema = new mongoose.Schema({
     origen: { type: String, enum: ['banco', 'propio'], default: 'propio' }, // <--- Nuevo campo clave
     fecha: { type: Date, default: Date.now }
 });
-const Expense = mongoose.model('Expense', ExpenseSchema);
+const Expense = mongoose.model('Expense', ExpenseSchema, 'Gastos');
 
 app.use('/api/clients', clientRoutes);
 app.use('/api/loans', loanRoutes);
