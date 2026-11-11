@@ -4,6 +4,9 @@ mongoose.pluralize(null);
 const cors = require('cors');
 require('dotenv').config();
 
+const authRoutes = require('./routes/authRoutes'); // O la ruta donde hayas guardado el archivo
+app.use('/api/auth', authRoutes);
+
 const clientRoutes = require('./routes/clientRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');

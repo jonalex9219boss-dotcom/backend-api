@@ -515,19 +515,36 @@
             }
         };
 
-      function iniciarSesion() {
+      async function iniciarSesion() {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
 
-    // Pon aquí tu usuario y tu clave exacta entre las comillas:
-    const usuarioCorrecto = 'admin';        // Reemplaza 'admin' por tu usuario
-    const claveCorrecta = '290312Jo.';   // Reemplaza 'MiClaveSegura' por tu contraseña secreta
+    try {
+        // Hacemos la petición a nuestra nueva ruta segura en el backend
+        const respuesta = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ usuario: user, password: pass })
+        });
 
-    if (user === usuarioCorrecto && pass === claveCorrecta) {
-        localStorage.setItem('pys_auth', 'true');
-        mostrarPanel();
-    } else {
-        alert('❌ Usuario o contraseña incorrectos');
+        const resultado = await respuesta.json();
+
+        if (respuesta.ok) {
+            // ¡Login exitoso en la Base de Datos! Guardamos el token y la sesión
+            localStorage.setItem('token', resultado.token);
+            localStorage.setItem('pys_auth', 'true');
+            
+            // Mostramos el panel principal
+            mostrarPanel();
+        } else {
+            // Si la contraseña o el usuario fallan
+            alert(resultado.mensaje || '❌ Usuario o contraseña incorrectos');
+        }
+    } catch (error) {
+        console.error('Error de conexión con el servidor:', error);
+        alert('❌ No se pudo conectar con el servidor de autenticación');
     }
 }
 
