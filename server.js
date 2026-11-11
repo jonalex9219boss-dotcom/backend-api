@@ -4,9 +4,23 @@ mongoose.pluralize(null);
 const cors = require('cors');
 require('dotenv').config();
 
-const authRoutes = require('./routes/authRoutes'); // O la ruta donde hayas guardado el archivo
+// 1. Inicializamos la app PRIMERO (evita el error de Render)
+const app = express();
+
+// 2. Configuramos los middlewares y la app
+app.use(express.json());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.static('public'));
+
+// 3. Importamos y montamos las rutas de autenticación
+const authRoutes = require('./routes/authRoutes'); 
 app.use('/api/auth', authRoutes);
 
+// 4. Importamos el resto de rutas y modelos que ya tenías funcionando
 const clientRoutes = require('./routes/clientRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
@@ -15,16 +29,6 @@ const CajaConfig = require('./models/CajaConfig');
 const Client = require('./models/Client');
 const Loan = require('./models/Loan');
 const Payment = require('./models/Payment');
-
-const app = express();
-
-app.use(express.json());
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.use(express.static('public'));
 
 // Esquema para Gastos / Pasivos Bancarios y Movimientos
 const ExpenseSchema = new mongoose.Schema({
