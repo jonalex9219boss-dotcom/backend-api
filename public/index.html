@@ -555,7 +555,7 @@
     cargarTodo();
 }
 
-        function cerrarSesion() {
+function cerrarSesion() {
     // Borramos cualquier rastro de sesión guardada
     localStorage.clear();
     sessionStorage.clear();
@@ -563,6 +563,33 @@
     // Forzamos al navegador a recargar la página principal desde cero
     window.location.href = window.location.pathname;
 }
+
+// ==========================================
+// NUEVO: SISTEMA DE CIERRE POR INACTIVIDAD (PC Y CELULAR)
+// ==========================================
+const TIEMPO_LIMITE_INACTIVIDAD = 5 * 60 * 1000; // 5 minutos (puedes cambiarlo si deseas más o menos tiempo)
+let temporizadorInactividad;
+
+function reiniciarContadorInactividad() {
+    clearTimeout(temporizadorInactividad);
+    temporizadorInactividad = setTimeout(() => {
+        if (localStorage.getItem('pys_auth') === 'true') {
+            alert('Su sesión se ha cerrado automáticamente por motivos de seguridad debido a inactividad.');
+            cerrarSesion();
+        }
+    }, TIEMPO_LIMITE_INACTIVIDAD);
+}
+
+// Eventos de Computador y Celular para detectar actividad
+window.addEventListener('mousemove', reiniciarContadorInactividad);
+window.addEventListener('keypress', reiniciarContadorInactividad);
+window.addEventListener('click', reiniciarContadorInactividad);
+window.addEventListener('scroll', reiniciarContadorInactividad);
+window.addEventListener('touchstart', reiniciarContadorInactividad);
+window.addEventListener('touchmove', reiniciarContadorInactividad);
+
+// Arrancamos el contador al cargar la página
+reiniciarContadorInactividad();
 
         function cargarTodo() {
             cargarMetricasGanancias();
