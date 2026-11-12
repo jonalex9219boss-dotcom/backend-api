@@ -76,16 +76,16 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({ mensaje: 'Préstamo no encontrado' });
         }
 
-        const monto = Number(montoPrestado) || prestamo.montoPrestado;
-        const interesMensual = Number(interesPorcentaje) !== undefined ? Number(interesPorcentaje) : prestamo.interesPorcentaje;
-        const meses = Number(plazoMeses) || prestamo.plazoMeses;
+        const monto = Number(montoPrestando) || prestamo.montoPrestando;
+const interesMensual = Number(interesPorcentaje) || prestamo.interesPorcentaje;
+const meses = Number(plazosMeses) || prestamo.plazoMeses;
 
-        const interesTotal = monto * (interesMensual / 100) * meses;
-        const nuevoMontoTotal = monto + interesTotal;
+// Aquí agregamos Math.round() para obligar a que el resultado sea un número entero exacto
+const intersTotal = Math.round(monto * (interesMensual / 100) * meses);
+const nuevoMontoTotal = Math.round(monto + intersTotal);
 
-        // Calcular la diferencia si ya se habían hecho abonos
-       const abonosRealizados = (prestamo.montoTotal || 0) - (prestamo.saldoPendiente || 0);
-        const nuevoSaldo = Math.max(0, nuevoMontoTotal - abonosRealizados);
+const abonosRealizados = (prestamo.abonosRealizado || 0) - (prestamo.saldoPendiente || 0);
+const nuevoSaldo = Math.max(0, Math.round(nuevoMontoTotal - abonosRealizados));
 
         // Agregamos esta línea aquí para que Mongoose no rechace el guardado
         prestamo.saldoCapital = prestamo.saldoCapital || monto;
